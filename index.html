@@ -2153,5 +2153,38 @@ async function login(e){e.preventDefault();const f=e.currentTarget,b=f.querySele
 async function register(e){e.preventDefault();const f=e.currentTarget,b=f.querySelector('[type=submit]'),v=Object.fromEntries(new FormData(f));const name=String(v.full_name||'').trim().replace(/\s+/g,' '),phone=String(v.phone||'').trim();if(name.length<5||!/^[+\d\s()\-]{10,30}$/.test(phone)){message('Проверьте ФИО и номер телефона.',true);return}if(v.password!==v.password_confirm){message('Пароли не совпадают.',true);return}b.disabled=true;message('Отправляем заявку…');try{const {error}=await client.auth.signUp({email:String(v.email).trim().toLowerCase(),password:v.password,options:{data:{hub_full_name:name,hub_phone:phone,hub_registration:true},emailRedirectTo:location.origin+location.pathname}});if(error)throw error;const email=String(v.email).trim().toLowerCase();f.reset();emailNotice(email)}catch(e){message('Ошибка регистрации: '+e.message,true)}finally{b.disabled=false}}
 function init(){if(!window.supabase){lock();message('Не удалось загрузить Supabase. Проверьте интернет и обновите страницу.',true);return}client=window.supabase.createClient(url,key);$('hub5102LoginTab').onclick=()=>showTab(false);$('hub5102RegTab').onclick=()=>showTab(true);$('hub5102LoginForm').addEventListener('submit',login);$('hub5102RegForm').addEventListener('submit',register);$('hub5106BackLogin').onclick=()=>{lock();showTab(false)};$('hub5102Recheck').onclick=check;$('hub5102Logout').onclick=async()=>{await client.auth.signOut();lock();showTab(false)};client.auth.onAuthStateChange(()=>{setTimeout(check,0)});check();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();</script></body>
+})();</script><!-- ED e M HUB 5.12: privacy-first analytics. Configure project keys below. -->
+<script>
+(function(){
+ 'use strict';
+ const CONFIG={posthogKey:'phc_BxanaoTuKfRiQnvRZrXNoBXZbMcER72A7Pj3zoj6duMw',posthogHost:'https://eu.i.posthog.com',clarityId:''};
+ // Analytics deliberately disabled until configured and staff notice/consent is handled.
+ if(!CONFIG.posthogKey && !CONFIG.clarityId)return;
+ const blocked=()=>!!document.querySelector('[id*="client" i][class*="modal" i]:not(.hidden), [id*="Client" i][class*="overlay" i]:not(.hidden)');
+ const sections=new Set(['home','settlements','projects','contractors','practice','zouit','plots']);
+ let active='home',started=Date.now(),visible=!document.hidden;
+ function track(name,props){if(blocked())return;try{window.posthog?.capture(name,props)}catch(e){}}
+ function flush(){if(visible){let seconds=Math.floor((Date.now()-started)/1000);if(seconds>=3 && seconds<7200)track('section_active_time',{section:active,seconds});}started=Date.now()}
+ function section(name){if(!sections.has(name)||name===active)return;flush();active=name;track('section_opened',{section:name})}
+ if(CONFIG.posthogKey){
+   const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/posthog-js@1/dist/posthog.min.js';s.async=true;
+   s.onload=()=>{if(!window.posthog)return;posthog.init(CONFIG.posthogKey,{api_host:CONFIG.posthogHost,autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true,person_profiles:'never',persistence:'memory',sanitize_properties:(p)=>{delete p.$current_url;delete p.$pathname;delete p.$referrer;delete p.$referring_domain;return p}});track('hub_opened',{app:'hub-test'});track('section_opened',{section:active});};
+   document.head.appendChild(s);
+ }
+ if(CONFIG.clarityId){
+   // IMPORTANT: Clarity can collect behavioral/session information. Enable only after privacy review.
+   window.clarity=window.clarity||function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};
+   const s=document.createElement('script');s.async=true;s.src='https://www.clarity.ms/tag/'+encodeURIComponent(CONFIG.clarityId);document.head.appendChild(s);
+ }
+ document.addEventListener('click',e=>{
+   const nav=e.target.closest('[data-go]');if(nav){section(nav.getAttribute('data-go'));return;}
+   const client=e.target.closest('#openClient');if(client){flush();active='clients';return;}
+   const tool=e.target.closest('#hubToolZouit,#hubToolPlots');if(tool){section(tool.id==='hubToolZouit'?'zouit':'plots');return;}
+   const view=e.target.closest('[data-view][data-parent]');if(view){const parent=view.getAttribute('data-parent');if(sections.has(parent))track('subview_opened',{section:parent,view:view.getAttribute('data-view')});}
+ },true);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){flush();visible=false}else{visible=true;started=Date.now()} });
+ window.addEventListener('pagehide',flush);
+})();
+</script>
+</body>
 </html>
