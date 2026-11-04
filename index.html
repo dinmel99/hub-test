@@ -769,7 +769,46 @@ html.hub5102-public-kp #hub5102Gate{display:none!important}
   <div class="content-area">
 
     <!-- HUB home: editorial sections are placeholders until the admin-managed feed is connected -->
-<section class="view-panel hidden" id="panelMortgage"><div class="mc-wrap"><div class="mc-head"><div><div class="mc-kicker">ED e M HUB / ФИНАНСОВЫЕ ИНСТРУМЕНТЫ</div><h2>Ипотека для ИЖС</h2><div class="mc-sub">Стоимость объекта, первоначальный взнос, ипотека и платёж клиента</div></div><div class="mc-actions"><button class="mc-btn" id="mcSave">Сохранить</button><button class="mc-btn" id="mcCopy">Копировать расчёт</button><button class="mc-btn primary" id="mcPdf">PDF / печать</button></div></div><div class="mc-grid"><div class="mc-input-col"><div class="mc-card"><h3>1. Сценарий покупки</h3><div class="mc-fields"><label class="mc-field mc-wide">Сценарий<select id="mcScenario"><option value="landbuild">Участок + строительство</option><option value="ready">Готовый дом с участком</option><option value="ownland">Строительство на своём участке</option></select></label><label class="mc-field">Программа<select id="mcProgram"><option value="family">Семейная ипотека (Москва и МО)</option><option value="market">Рыночная</option><option value="combo">Комбинированная</option></select></label><label class="mc-field mc-family">Количество детей<select id="mcChildren"><option value="1">1 ребёнок — 12 млн ₽</option><option value="2">2 ребёнка — 15 млн ₽</option><option value="3">3 и более — 18 млн ₽</option></select></label><label class="mc-field">Режим<select id="mcMode"><option value="with">С первоначальным взносом</option><option value="without">Без собственных средств</option></select></label><label class="mc-field">Срок, лет<input id="mcYears" type="number" min="1" max="30" value="30"></label><label class="mc-field">Льготная / основная ставка, %<input id="mcRate" type="number" min="0" max="60" step="0.1" value="6"></label><label class="mc-field mc-combo">Льготная часть кредита, ₽<input id="mcPreferPart" type="number" min="0" value="12000000"></label><label class="mc-field mc-combo">Ставка сверх льготной части, %<input id="mcMarketRate" type="number" min="0" max="60" step="0.1" value="20"></label></div></div><div class="mc-card"><h3>2. Стоимость объекта и договоров</h3><div class="mc-fields"><label class="mc-field mc-land">Цена участка (фактическая), ₽<input id="mcLand" type="number" min="0" value="4000000"></label><label class="mc-field mc-land">Доля договорной корректировки участка, %<input id="mcLandUplift" type="number" min="0" max="99" step="0.1" value="0"></label><label class="mc-field mc-build">Стоимость строительства, ₽<input id="mcBuild" type="number" min="0" value="9000000"></label><label class="mc-field mc-build">Доп. стоимость в договоре подряда, ₽<input id="mcBuildExtra" type="number" min="0" value="0"></label><label class="mc-field mc-ready">Цена готового дома с участком, ₽<input id="mcReady" type="number" min="0" value="15000000"></label></div><p class="mc-small">Договорная корректировка участка — необязательная модель для анализа цены. 20,1% можно задать вручную: цена договора = фактическая цена / (1 − 0,201). Изменения цены должны иметь реальное экономическое и договорное основание.</p></div><div class="mc-card"><h3>3. Источники первоначального взноса</h3><div class="mc-fields"><label class="mc-field">Собственные средства, ₽<input id="mcOwn" type="number" min="0" value="2600000"></label><label class="mc-field">Материнский капитал, ₽<input id="mcMat" type="number" min="0" value="0"></label><label class="mc-field">Субсидии, ₽<input id="mcSub" type="number" min="0" value="0"></label><label class="mc-field">Другие подтверждённые средства, ₽<input id="mcOther" type="number" min="0" value="0"></label><label class="mc-field">Заём подрядчика клиенту, ₽<input id="mcLoan" type="number" min="0" value="0"></label><label class="mc-field">Стоимость оформления займа, % от суммы<input id="mcLoanFee" type="number" min="0" max="100" step="0.1" value="10"></label></div><p class="mc-small">Заём подрядчика учитывается только для подряда, без ежемесячного платежа в период строительства. Разовая комиссия показана отдельно. Допустимость источника ПВ согласовывается с банком.</p></div><div class="mc-card"><h3>4. Обратный расчёт и досрочное погашение</h3><div class="mc-fields"><label class="mc-field">Желаемый платёж, ₽/мес.<input id="mcTarget" type="number" min="0" value="65000"></label><label class="mc-field">Досрочно каждый месяц, ₽<input id="mcEarly" type="number" min="0" value="0"></label><label class="mc-field">Лимит кредита для других программ, ₽ (0 — не задан)<input id="mcCap" type="number" min="0" value="0"></label><label class="mc-field">Минимальный ПВ по требованиям банка, %<input id="mcMinDown" type="number" min="0" max="100" step="0.1" value="20.1"></label></div><p class="mc-small">Для семейной ипотеки применяются заданные лимиты HUB по числу детей (Москва и МО). Фактические условия и допустимые источники ПВ подтверждает банк.</p></div></div><div class="mc-results-col"><div class="mc-card"><h3>Первоначальный взнос по договорам</h3><div class="mc-down-grid"><div class="mc-down-item" id="mcDownLandBox"><span>ПВ на землю</span><strong id="mcDownLand">—</strong><small id="mcDownLandBase"></small></div><div class="mc-down-item" id="mcDownBuildBox"><span>ПВ на подряд</span><strong id="mcDownBuild">—</strong><small id="mcDownBuildBase"></small></div></div><div class="mc-down-total"><span>Всего требуется ПВ</span><strong id="mcDownTotal">—</strong></div><p class="mc-small">Расчёт по указанному банковскому проценту отдельно для каждого договора. Маткапитал направляется только на подряд и не распределяется на землю.</p></div><div class="mc-card"><h3>Результат расчёта</h3><div class="mc-total"><span>Ежемесячный платёж по ипотеке</span><strong id="mcMonthly">—</strong></div><div id="mcMetrics"></div><div id="mcWarnings"></div></div><div class="mc-card"><h3>Обратный расчёт</h3><div id="mcReverse"></div></div><div class="mc-card"><h3>Бюджет и обязательства клиента</h3><div id="mcFlow"></div><p class="mc-small">Заёмные средства для первоначального взноса учитываются отдельно. Допустимость каждого источника и условия сделки подтверждает банк.</p></div><div class="mc-card"><h3>График погашения</h3><div id="mcScheduleSummary" class="mc-small"></div><div class="mc-table-wrap"><table class="mc-table"><thead><tr><th>Месяц</th><th>Платёж</th><th>Проценты</th><th>Остаток</th></tr></thead><tbody id="mcSchedule"></tbody></table></div></div><div class="mc-card mc-saved-card"><h3>Сохранённые расчёты</h3><div id="mcSaved"></div><p class="mc-small">Сохраняются только в браузере на этом устройстве. Не используйте для персональных данных клиентов.</p></div></div></div></div></section>
+<section class="view-panel hidden" id="panelMortgage">
+<div class="mc-wrap">
+  <div class="mc-head"><div><div class="mc-kicker">ED e M HUB / ИПОТЕКА</div><h2>Базовый расчёт ипотеки</h2><div class="mc-sub">Москва и Московская область · семейная ипотека · первоначальный взнос от 20,1%</div></div>
+    <div class="mc-actions"><button class="mc-btn" id="mcSave">Сохранить</button><button class="mc-btn" id="mcCopy">Копировать расчёт</button><button class="mc-btn primary" id="mcPdf">PDF / печать</button></div>
+  </div>
+  <div class="mc-grid">
+    <div class="mc-input-col">
+      <div class="mc-card"><h3>1. Условия семейной ипотеки</h3>
+        <div class="mc-fields">
+          <label class="mc-field mc-wide">Количество детей<select id="mcChildren"><option value="1">1 ребёнок — лимит 12 млн ₽</option><option value="2">2 ребёнка — лимит 15 млн ₽</option><option value="3">3 и более — лимит 18 млн ₽</option></select></label>
+          <label class="mc-field">Ставка, %<input id="mcRate" type="number" min="0" max="60" step="0.1" value="6"></label>
+          <label class="mc-field">Срок, лет<input id="mcYears" type="number" min="1" max="30" value="30"></label>
+        </div>
+      </div>
+      <div class="mc-card"><h3>2. Стоимость объекта</h3>
+        <div class="mc-fields">
+          <label class="mc-field">Стоимость участка, ₽<input id="mcLand" type="number" min="0" value="5000000"></label>
+          <label class="mc-field">Стоимость строительства, ₽<input id="mcBuild" type="number" min="0" value="10000000"></label>
+        </div>
+      </div>
+      <div class="mc-card"><h3>3. Первоначальный взнос</h3>
+        <div class="mc-fields">
+          <label class="mc-field">Первоначальный взнос, ₽<input id="mcOwn" type="number" min="0" value="3018774"></label>
+          <label class="mc-field">Минимальный ПВ, %<input id="mcMinDown" type="number" min="0" max="99" step="0.1" value="20.1"></label>
+        </div>
+        <p class="mc-small">Первоначальный взнос может быть больше минимального. Для полного использования лимита стоимость объекта должна покрывать сумму кредита и необходимый ПВ.</p>
+      </div>
+      <div class="mc-card"><h3>Ориентиры для полного лимита при ПВ 20,1%</h3>
+        <div id="mcReference"></div>
+      </div>
+    </div>
+    <div class="mc-results-col">
+      <div class="mc-card"><h3>Результат расчёта</h3>
+        <div class="mc-total"><span>Ежемесячный платёж по ипотеке</span><strong id="mcMonthly">—</strong></div>
+        <div id="mcMetrics"></div><div id="mcWarnings"></div>
+      </div>
+      <div class="mc-card"><h3>Сохранённые расчёты</h3><div id="mcSaved"></div><p class="mc-small">Расчёты хранятся только в браузере этого устройства.</p></div>
+    </div>
+  </div>
+</div></section>
     <section class="view-panel hidden" id="panelHome">
       <div class="hub-home-scroll">
         <div class="hub-home-hero"><div><div class="hub-home-eyebrow">ПРОСТОР · ИЖС HUB</div><h1><span class="edem-hero-line">Всё важное об ИЖС —</span><span class="edem-hero-line">в одном месте</span></h1><p>Рабочий центр агента: объекты, партнёры, практика и инструменты для консультаций.</p><div class="hub-home-actions"><button data-home-go="settlements">Найти посёлок →</button><button data-home-go="projects">Проекты домов</button><button data-home-go="contractors">Подрядчики</button></div></div></div>
@@ -2291,45 +2330,75 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  window.addEventListener('pagehide',flush);
 })();
 </script>
-<script>
+<script id="mc-basic-mortgage">
 (function(){
 'use strict';
-const $=id=>document.getElementById(id), ids=['mcScenario','mcProgram','mcChildren','mcMode','mcYears','mcRate','mcPreferPart','mcMarketRate','mcLand','mcLandUplift','mcBuild','mcBuildExtra','mcReady','mcOwn','mcMat','mcSub','mcOther','mcLoan','mcLoanFee','mcTarget','mcEarly','mcCap','mcMinDown'];
-const n=id=>Math.max(0,Number($(id).value)||0), rub=x=>Math.round(x).toLocaleString('ru-RU')+' ₽', fmt=x=>Number(x).toLocaleString('ru-RU',{maximumFractionDigits:1});
-function ann(p,annual,months){if(p<=0||months<=0)return 0;let r=annual/1200;return r===0?p/months:p*r/(1-Math.pow(1+r,-months))}
-function principal(pay,annual,months){let r=annual/1200;return r===0?pay*months:pay*(1-Math.pow(1+r,-months))/r}
-function metric(k,v){return '<div class="mc-metric"><span>'+k+'</span><strong>'+v+'</strong></div>'}
-function run(){
-const sc=$('mcScenario').value,program=$('mcProgram').value,mode=$('mcMode').value,months=Math.max(1,Math.round(n('mcYears')*12)),rate=n('mcRate'),rate2=n('mcMarketRate');
-document.querySelectorAll('.mc-land').forEach(e=>e.classList.toggle('mc-hide',sc!=='landbuild'));document.querySelectorAll('.mc-build').forEach(e=>e.classList.toggle('mc-hide',sc==='ready'));document.querySelectorAll('.mc-ready').forEach(e=>e.classList.toggle('mc-hide',sc!=='ready'));document.querySelectorAll('.mc-combo').forEach(e=>e.classList.toggle('mc-hide',program!=='combo'));document.querySelectorAll('.mc-family').forEach(e=>e.classList.toggle('mc-hide',program!=='family'));
-$('mcOwn').disabled=mode==='without';
-const land=sc==='landbuild'?n('mcLand'):0,landPct=Math.min(99,n('mcLandUplift'))/100,landContract=land/(1-landPct),build=sc==='ready'?0:n('mcBuild'),extra=sc==='ready'?0:n('mcBuildExtra'),ready=sc==='ready'?n('mcReady'):0;
-const loan=sc==='ready'?0:n('mcLoan'),fee=loan*n('mcLoanFee')/100,base=land+build+ready,constructionContract=build+extra+loan,contract=landContract+constructionContract+ready,own=mode==='without'?0:n('mcOwn'),mat=n('mcMat'),sub=n('mcSub'),other=n('mcOther'),nonBorrowed=own+mat+sub+other,allDown=nonBorrowed+loan,credit=Math.max(0,contract-allDown),pref=program==='combo'?Math.min(credit,n('mcPreferPart')):credit,market=program==='combo'?credit-pref:0,pay=ann(pref,rate,months)+ann(market,rate2,months),total=pay*months,interest=total-credit;
-const cap=program==='family'?({1:12000000,2:15000000,3:18000000}[$('mcChildren').value]||12000000):n('mcCap'),minDown=n('mcMinDown'),target=n('mcTarget'),early=n('mcEarly');
-const landDown=landContract*minDown/100, buildDown=(constructionContract+ready)*minDown/100;
-$('mcDownLandBox').classList.toggle('mc-hide',sc!=='landbuild');
-$('mcDownBuildBox').classList.toggle('mc-hide',false);
-$('mcDownLand').textContent=rub(landDown);$('mcDownBuild').textContent=rub(buildDown);$('mcDownTotal').textContent=rub(landDown+buildDown);
-$('mcDownLandBase').textContent='От стоимости участка '+rub(landContract);
-$('mcDownBuildBox').querySelector('span').textContent=sc==='ready'?'ПВ на готовый дом':'ПВ на подряд';
-$('mcDownBuildBase').textContent='От стоимости '+rub(constructionContract+ready);
-const constructionNet=Math.max(0,constructionContract-loan-fee), constructionDeductions=fee;
-const landPriceDifference=Math.max(0,landContract-land),landAvailable=own+sub+other,landFunded=Math.min(landDown,landAvailable),landShort=Math.max(0,landDown-landFunded),remainingCash=Math.max(0,landAvailable-landFunded),matUsed=sc==='ready'?0:Math.min(mat,buildDown),buildAvailable=remainingCash+matUsed+loan,buildShort=Math.max(0,buildDown-buildAvailable),unusedMat=Math.max(0,mat-matUsed);
-$('mcMonthly').textContent=rub(pay);$('mcMetrics').innerHTML=metric('Базовая стоимость проекта',rub(base))+metric('Стоимость по договорам',rub(contract))+metric('Лимит ипотеки'+(program==='family'?' по детям':''),cap?rub(cap):'Не задан')+metric('Сумма ипотеки',rub(credit))+(sc!=='ready'?metric('Реально остаётся на строительство',rub(constructionNet))+metric('Расходы на комиссию из бюджета стройки',rub(constructionDeductions)):'')+metric('Маткапитал на подряд',rub(matUsed))+(landPriceDifference>0?metric('Разница договорной и фактической цены земли (не ПВ)',rub(landPriceDifference)):'')+metric('Дефицит ПВ на землю',rub(landShort))+metric('Дефицит ПВ на подряд',rub(buildShort))+metric('Проценты за весь срок',rub(interest))+metric('Общая выплата по ипотеке',rub(total))+metric('Разовая комиссия по займу',rub(fee));
-const warnings=[];if(contract<=0)warnings.push('Укажите стоимость объекта.');if(loan>0)warnings.push('Заём подрядчика не является автоматически допустимым ПВ. Проверьте правила банка, договор займа и раскрытие источника средств.');if(allDown>contract)warnings.push('Источники ПВ превышают договорную стоимость.');if(contract>0&&nonBorrowed/contract*100<minDown)warnings.push('ПВ без заёмных средств ниже указанного банковского минимума ('+fmt(minDown)+'%).');if(cap>0&&credit>cap)warnings.unshift('⛔ ПРЕВЫШЕН ЛИМИТ ИПОТЕКИ: участок и подряд вместе требуют кредита '+rub(credit)+', лимит '+rub(cap)+', превышение '+rub(credit-cap)+'. Сделка не укладывается в заданный лимит.');if(landShort>0)warnings.push('Не хватает '+rub(landShort)+' первоначального взноса на землю. Маткапитал и заём подрядчика на землю не распределяются.');if(buildShort>0)warnings.push('Не хватает '+rub(buildShort)+' первоначального взноса на подряд / готовый объект.');if(unusedMat>0&&mat>0)warnings.push('Маткапитал '+rub(unusedMat)+' не распределён на ПВ: на землю его использовать нельзя.');if(extra>0||landPct>0)warnings.push('Корректировки договорных цен требуют реального обоснования, оценки и согласования с банком. Разница цены земли не считается уплаченным ПВ.');if(loan>0&&fee>0)warnings.push('В модели сумма займа добавляется к стоимости договора подряда и учитывается как отдельный фактически предоставленный ПВ. Она не увеличивает ипотечный кредит при прочих равных. Для банка необходимы действительные договорная цена, заём, платежи и подтверждение источников средств; комиссия уменьшает бюджет строительства, если оплачивается из него.');if(program==='family')warnings.push('Лимиты 12 / 15 / 18 млн ₽ для Москвы и МО заданы по условиям HUB; право на программу и параметры сделки проверяет банк.');$('mcWarnings').innerHTML=warnings.map(x=>'<div class="mc-alert">⚠ '+x+'</div>').join('');
-let affordable=principal(target,rate,months);if(program==='combo'){let p=ann(n('mcPreferPart'),rate,months);affordable=target<=p?principal(target,rate,months):n('mcPreferPart')+principal(target-p,rate2,months)}let allowed=cap>0?Math.min(cap,affordable):affordable;
-$('mcReverse').innerHTML=metric('При платеже '+rub(target),rub(affordable)+' кредита')+metric('С учётом заданного лимита',rub(allowed))+metric('Бюджет с подтверждённым ПВ',rub(allowed+nonBorrowed))+'<p class="mc-small">Обратный расчёт не учитывает скоринг, ПДН, страховку и банковские ограничения, кроме введённого лимита.</p>';
-$('mcFlow').innerHTML=metric('Цена покупки по договорам',rub(contract))+metric('Лимит ипотеки',cap?rub(cap):'Не задан')+metric('Превышение лимита',rub(Math.max(0,credit-cap)))+(sc!=='ready'?metric('Договор подряда (включая сумму займа)',rub(constructionContract))+metric('Возврат займа из договорной надбавки (по сценарию)',rub(loan))+metric('Комиссия из средств подряда (по сценарию)',rub(fee))+metric('Реально остаётся на строительство',rub(constructionNet)):'')+metric('ПВ на землю',rub(landDown))+(landPriceDifference>0?metric('Корректировка цены участка (не оплата ПВ)',rub(landPriceDifference)):'')+metric('Доступно на землю (свои, субсидии, другие)',rub(landFunded))+metric('Недостаток на землю',rub(landShort))+metric(sc==='ready'?'ПВ на готовый дом':'ПВ на подряд',rub(buildDown))+metric('Маткапитал на подряд',rub(matUsed))+metric('Заём подрядчика на ПВ по строительству',rub(loan))+metric('Недостаток на подряд',rub(buildShort))+metric('Всего требуется ПВ',rub(landDown+buildDown))+metric('Разовая комиссия по займу',rub(fee))+metric('Ипотечный платёж',rub(pay)+'/мес.');
-let a=pref,b=market,paidInt=0,paidTotal=0,rows=[],end=months;for(let i=1;i<=months;i++){let ia=a*rate/1200,ib=b*rate2/1200,regular=Math.min(a+ia,ann(pref,rate,months))+Math.min(b+ib,ann(market,rate2,months)),interestNow=ia+ib,pr=Math.max(0,regular-interestNow),extraPay=Math.min(early,Math.max(0,a+b-pr));let sum=a+b;if(sum>0){let pa=pr+extraPay;let aa=sum?Math.min(a,pa*a/sum):0;let bb=Math.min(b,pa-aa);a=Math.max(0,a-aa);b=Math.max(0,b-bb);let actual=interestNow+aa+bb;paidInt+=interestNow;paidTotal+=actual;if(i<=12||i%12===0||a+b<.01)rows.push('<tr><td>'+i+'</td><td>'+rub(actual)+'</td><td>'+rub(interestNow)+'</td><td>'+rub(a+b)+'</td></tr>');if(a+b<.01){end=i;break}}}
-$('mcScheduleSummary').textContent='С досрочным платежом '+rub(early)+'/мес.: срок '+end+' мес., проценты '+rub(paidInt)+', экономия '+rub(Math.max(0,interest-paidInt))+'. Показаны первые 12 месяцев, затем каждый 12-й и последний.';$('mcSchedule').innerHTML=rows.join('');
-window.mcSummary='ED e M HUB — ипотечный расчёт\nСценарий: '+$('mcScenario').selectedOptions[0].text+'\nПрограмма: '+$('mcProgram').selectedOptions[0].text+'\nСтоимость проекта: '+rub(base)+'\nДоговорная стоимость: '+rub(contract)+'\nРазница цены земли (не оплата ПВ): '+rub(landPriceDifference)+'\nПВ на землю: '+rub(landDown)+'\nПВ на подряд / готовый дом: '+rub(buildDown)+'\nВсего ПВ: '+rub(landDown+buildDown)+'\nМаткапитал на подряд: '+rub(matUsed)+'\nСобственные и подтверждённые средства: '+rub(nonBorrowed)+'\nЗаём подрядчика: '+rub(loan)+'\nСтоимость оформления займа: '+rub(fee)+'\nРеально остаётся на строительство (после возврата займа и комиссии): '+rub(constructionNet)+'\nПревышение ипотечного лимита: '+rub(Math.max(0,credit-cap))+'\nИпотека: '+rub(credit)+'\nСтавка: '+fmt(rate)+'%\nСрок: '+n('mcYears')+' лет\nПлатёж: '+rub(pay)+'/мес.\nДефицит ПВ на землю: '+rub(landShort)+'; на подряд: '+rub(buildShort)+'\nРасчёт предварительный. Требуется подтверждение условий банком.';
+const $ = id => document.getElementById(id);
+if (!$('mcChildren')) return;
+const ids=['mcChildren','mcRate','mcYears','mcLand','mcBuild','mcOwn','mcMinDown'];
+const n=id=>Math.max(0,Number($(id).value)||0);
+const rub=v=>Math.round(v).toLocaleString('ru-RU')+' ₽';
+const row=(label,value)=>'<div class="mc-metric"><span>'+label+'</span><strong>'+value+'</strong></div>';
+const cap={1:12000000,2:15000000,3:18000000};
+const KEY='edem_mortgage_basic_v1';
+let summary='';
+function calc(){
+ const limit=cap[$('mcChildren').value]||12000000;
+ const total=n('mcLand')+n('mcBuild');
+ const pct=Math.min(99,n('mcMinDown'))/100;
+ const down=n('mcOwn');
+ const minDown=Math.ceil(total*pct);
+ const loan=Math.max(0,total-down);
+ const over=Math.max(0,loan-limit);
+ const short=Math.max(0,minDown-down);
+ const required=Math.max(minDown,total-limit);
+ const years=Math.max(1,Math.min(30,n('mcYears')||30));
+ const months=years*12, rate=n('mcRate')/1200;
+ const pay=rate===0?loan/months:loan*rate/(1-Math.pow(1+rate,-months));
+ const maxPrice=Math.floor(limit/(1-pct));
+ const fullDp=maxPrice-limit;
+ $('mcMonthly').textContent=rub(pay);
+ $('mcMetrics').innerHTML=[
+ row('Стоимость участка',rub(n('mcLand'))),
+ row('Стоимость строительства',rub(n('mcBuild'))),
+ row('Общая стоимость объекта',rub(total)),
+ row('Минимальный ПВ ('+(pct*100).toLocaleString('ru-RU',{maximumFractionDigits:2})+'%)',rub(minDown)),
+ row('Указанный ПВ',rub(down)),
+ row('Лимит кредита',rub(limit)),
+ row('Сумма ипотеки',rub(loan)),
+ row('Первоначальный взнос для соблюдения лимита',rub(required)),
+ row('Переплата по процентам',rub(pay*months-loan)),
+ row('Всего выплат по ипотеке',rub(pay*months))
+ ].join('');
+ const warnings=[];
+ if(down>total)warnings.push('Первоначальный взнос превышает стоимость объекта.');
+ if(short>0)warnings.push('Не хватает минимального первоначального взноса: '+rub(short)+'.');
+ if(over>0)warnings.push('Превышен лимит семейной ипотеки на '+rub(over)+'. Увеличьте ПВ минимум до '+rub(required)+'.');
+ if(!warnings.length)warnings.push('Сумма кредита укладывается в лимит, первоначального взноса достаточно.');
+ $('mcWarnings').innerHTML=warnings.map((w,i)=>'<p class="mc-small" style="padding:10px 12px;border-radius:10px;background:'+(short||over||down>total?'#fff0e8':'#edf8f0')+';color:'+(short||over||down>total?'#a94321':'#21633b')+'">'+w+'</p>').join('');
+ $('mcReference').innerHTML=row('Максимальный кредит',rub(limit))+row('Минимальный ПВ для полного лимита',rub(Math.ceil(limit*pct/(1-pct))))+row('Стоимость объекта для полного лимита',rub(limit+Math.ceil(limit*pct/(1-pct))));
+ summary=['Семейная ипотека · Москва и МО','Дети: '+$('mcChildren').selectedOptions[0].text,'Участок: '+rub(n('mcLand')),'Строительство: '+rub(n('mcBuild')),'Общая стоимость: '+rub(total),'Первоначальный взнос: '+rub(down),'Минимальный ПВ: '+rub(minDown),'Сумма ипотеки: '+rub(loan),'Лимит: '+rub(limit),'Ставка: '+n('mcRate')+'%','Срок: '+years+' лет','Ежемесячный платёж: '+rub(pay),...warnings].join('\n');
 }
-ids.forEach(id=>$(id).addEventListener('input',run));$('mcProgram').addEventListener('change',()=>{if($('mcProgram').value==='market'&&n('mcRate')===6)$('mcRate').value=20;if($('mcProgram').value==='family'&&n('mcRate')===20)$('mcRate').value=6;run()});
-const KEY='edem_mortgage_saved_v1';function saved(){let list=[];try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}$('mcSaved').innerHTML=list.length?list.map((x,i)=>'<div class="mc-saved"><span>'+String(x.name).replace(/[<>&"]/g,'')+'</span><span><button data-load="'+i+'">Открыть</button> <button data-del="'+i+'">×</button></span></div>').join(''):'Пока нет сохранённых расчётов';}
-$('mcSave').onclick=()=>{let list=[];try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}let data={};ids.forEach(id=>data[id]=$(id).value);list.unshift({name:new Date().toLocaleString('ru-RU')+' · '+$('mcScenario').selectedOptions[0].text,data});try{localStorage.setItem(KEY,JSON.stringify(list.slice(0,30)));saved()}catch(e){alert('Не удалось сохранить расчёт в браузере.')}};
-$('mcSaved').onclick=e=>{let b=e.target.closest('button');if(!b)return;let list=JSON.parse(localStorage.getItem(KEY)||'[]');if(b.dataset.load!==undefined){let item=list[+b.dataset.load];if(item){ids.forEach(id=>{if(item.data[id]!==undefined)$(id).value=item.data[id]});run()}}if(b.dataset.del!==undefined){list.splice(+b.dataset.del,1);localStorage.setItem(KEY,JSON.stringify(list));saved()}};
-$('mcCopy').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(window.mcSummary).then(()=>alert('Расчёт скопирован')).catch(()=>prompt('Скопируйте расчёт:',window.mcSummary));else prompt('Скопируйте расчёт:',window.mcSummary)};
-$('mcPdf').onclick=()=>window.print();saved();run();
+function saved(){
+ let list=[];try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+ $('mcSaved').innerHTML=list.length?list.map((x,i)=>'<div class="mc-saved"><span>'+x.name+'</span><button class="mc-btn" data-load="'+i+'">Открыть</button><button class="mc-btn" data-delete="'+i+'">Удалить</button></div>').join(''):'<p class="mc-small">Пока нет сохранённых расчётов.</p>';
+}
+ids.forEach(id=>$(id).addEventListener('input',calc));
+$('mcSave').onclick=()=>{
+ let list=[];try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+ const data={};ids.forEach(id=>data[id]=$(id).value);
+ list.unshift({name:new Date().toLocaleString('ru-RU'),data});
+ localStorage.setItem(KEY,JSON.stringify(list.slice(0,20)));saved();
+};
+$('mcSaved').onclick=e=>{
+ const b=e.target.closest('button');if(!b)return;
+ let list=[];try{list=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+ if(b.dataset.load!==undefined){const item=list[+b.dataset.load];if(item){ids.forEach(id=>{if(item.data[id]!==undefined)$(id).value=item.data[id]});calc()}}
+ if(b.dataset.delete!==undefined){list.splice(+b.dataset.delete,1);localStorage.setItem(KEY,JSON.stringify(list));saved()}
+};
+$('mcCopy').onclick=()=>{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(summary).then(()=>alert('Расчёт скопирован')).catch(()=>prompt('Скопируйте расчёт:',summary));else prompt('Скопируйте расчёт:',summary)};
+$('mcPdf').onclick=()=>window.print();
+saved();calc();
 })();
 </script>
 
