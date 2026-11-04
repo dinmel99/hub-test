@@ -1127,11 +1127,21 @@ async function loadSettlementsOnce(){
   renderSettlementsList();
 }
 
+// Нормализация типов только для фильтра; исходные значения в Supabase сохраняются.
+function hubObjectTypes(d){
+  const raw=String(d.type||'').toLowerCase().replace(/ё/g,'е');
+  const result=new Set();
+  if(/участ|земл/.test(raw)) result.add('Участки');
+  if(/дом|коттедж|дач|вилл|дуплекс/.test(raw)) result.add('Дом с участком');
+  if(/таунхаус|таунхауз|таунхауз|townhouse/.test(raw)) result.add('Таунхаусы');
+  // Не исключаем посёлок из поиска, если в его типе указаны одновременно дома и участки.
+  // Квартиры без других типов остаются доступными в «Все типы».
+  return result;
+}
 function populateExtraFilters(){
-  for(const [id,key,label] of [['filterClass','klass','Все классы'],['filterType','type','Все типы']]){
-    const values=[...new Set(SETTLEMENTS_DATA.map(d=>String(d[key]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ru'));
-    document.getElementById(id).innerHTML='<option value="">'+label+'</option>'+values.map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join('');
-  }
+  const classes=[...new Set(SETTLEMENTS_DATA.map(d=>String(d.klass||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ru'));
+  document.getElementById('filterClass').innerHTML='<option value="">Все классы</option>'+classes.map(v=>'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>').join('');
+  document.getElementById('filterType').innerHTML='<option value="">Все типы</option><option value="Участки">Участки</option><option value="Дом с участком">Дом с участком</option><option value="Таунхаусы">Таунхаусы</option>';
 }
 
 function escapeHtml(value){
@@ -1143,7 +1153,7 @@ function numericValue(v){
   return Number.isFinite(n) ? n : null;
 }
 // HUB 5.12.2: prices are in millions for land/house, rubles for townhouse and per-sotka.
-function hubPriceValue(v){const n=Number(String(v??'').trim().replace(/\s/g,'').replace(',','.'));return Number.isFinite(n)&&n>0?n:null;}
+function hubPriceValue(v){const m=String(v??'').replace(/\s/g,'').replace(',','.').match(/(?:от)?([0-9]+(?:\.[0-9]+)?)/i);const n=m?Number(m[1]):NaN;return Number.isFinite(n)&&n>0?n:null;}
 function hubMln(v){const n=hubPriceValue(v);return n===null?'':new Intl.NumberFormat('ru-RU',{maximumFractionDigits:3}).format(n)+' млн ₽';}
 function hubRub(v){const n=hubPriceValue(v);return n===null?'':new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(n)+' ₽';}
 function hubSettlementPriceLines(d){
@@ -1168,7 +1178,7 @@ function renderSettlementsList(){
   const rows = SETTLEMENTS_DATA.filter(d=>{
     if(q && !String(d.name||'').toLowerCase().includes(q)) return false;
     if(klass && String(d.klass||'').trim()!==klass) return false;
-    if(type && String(d.type||'').trim()!==type) return false;
+    if(type && !hubObjectTypes(d).has(type)) return false;
     if(direction && d.direction !== direction) return false;
     const distance = numericValue(d.km);
     if(km!==null && (distance===null || distance>km)) return false;
@@ -1181,7 +1191,7 @@ function renderSettlementsList(){
     const thumb = d.photo ? `<img class="catalog-photo" src="${escapeHtml(d.photo)}" alt="${escapeHtml(d.name)}" loading="lazy" onerror="this.style.display='none'">` : '';
     const badge = d.badge ? `<span class="card-badge">${escapeHtml(d.badge)}</span>` : '';
     const prices = hubSettlementPriceLines(d);
-    const land = prices.length ? escapeHtml(prices[0][0]+' '+prices[0][1]) : 'Стоимость уточняется';
+    const land = prices.length ? escapeHtml(prices[0][0]+' '+prices[0][1]) : '';
     const house = prices.slice(1).map(([k,v])=>`<div class="card-secondary-price">${escapeHtml(k+' '+v)}</div>`).join('');
     const extra = hubSettlementExtra(d).map(v=>`<span class="hub-price-extra">${escapeHtml(v)}</span>`).join('');
     const site = ''; // Ссылка доступна в подробной карточке
@@ -1190,7 +1200,7 @@ function renderSettlementsList(){
       <div class="card-details"><div class="card-partner">${escapeHtml(d.partner||'Партнёрский посёлок')}</div>
       <h3>${escapeHtml(d.name)}</h3>
       <div class="card-meta">${escapeHtml([d.klass,d.type,d.direction,d.highway,d.km ? d.km+' км от МКАД' : ''].filter(Boolean).join(' · '))}</div>
-      <div class="hub-price-extras">${extra}</div><div class="card-bottom"><div><div class="card-price">${land}</div>${house}</div><button class="pickbtn" data-name="${escapeHtml(d.name)}" data-idx="${i}" type="button">+ В подборку</button></div>
+      <div class="hub-price-extras">${extra}</div><div class="card-bottom"><div>${land?'<div class="card-price">'+land+'</div>':''}${house}</div><button class="pickbtn" data-name="${escapeHtml(d.name)}" data-idx="${i}" type="button">+ В подборку</button></div>
       <button class="hub-village-detail-trigger" type="button" data-village-detail="${escapeHtml(d.name)}">Подробнее о посёлке →</button>${site}</div></article>`;
   }).join('');
   body.querySelectorAll('.property-card').forEach(card=>card.addEventListener('click',e=>{if(e.target.closest('button,a'))return; focusCurrentSettlement(rows[Number(card.dataset.index)]);card.classList.add('is-focused');}));
@@ -1933,8 +1943,49 @@ let meeting=sessionStorage.getItem('hub-meeting-572')==='yes', detailToken=0, pr
 function applyMeeting(){document.body.classList.toggle('hub-meeting-active',meeting);$('hubMeetingToggle').textContent=meeting?'✓ Завершить встречу':'◉ Встреча';$('hubMeetingToggle').setAttribute('aria-pressed',String(meeting));sessionStorage.setItem('hub-meeting-572',meeting?'yes':'no');if(meeting){privateCache.clear();$('hubVillagePrivate')?.remove();}}
 async function profile(){const client=db();if(!client)return;const {data:{session}}=await client.auth.getSession();let role='Гость';if(session){const {data:a}=await client.rpc('is_hub_admin');if(a===true)role='Администратор';else {const {data:g}=await client.rpc('is_hub_agent');role=g===true?'Агент':'Без агентского доступа';}}$('hubProfileEmail').textContent=session?.user?.email||'Не авторизован';$('hubProfileRole').textContent='Роль: '+role;$('hub511AdminLink').style.display=role==='Администратор'?'flex':'none';$('hubProfileAuthAction').textContent=session?'Выйти из аккаунта':'Войти';return {session,role};}
 function closeDetail(){detailToken++;$('hubVillageOverlay').hidden=true;}
-function fact(k,v){return '<div><span>'+esc(k)+'</span><strong>'+esc(v||'Уточняется')+'</strong></div>';}
-async function openDetail(name){const token=++detailToken;const row=(window.SETTLEMENTS_DATA||[]).find(x=>x.name===name)||(typeof SETTLEMENTS_DATA!=='undefined'?SETTLEMENTS_DATA.find(x=>x.name===name):null);if(!row)return;const d=row;$('hubVillageTitle').textContent=d.name;$('hubVillageSubtitle').textContent=[d.partner,d.direction,d.highway].filter(Boolean).join(' · ');$('hubVillageContent').innerHTML=(url(d.photo)?'<img class="hub-village-hero" alt="Фото посёлка" src="'+esc(url(d.photo))+'">':'')+'<div class="hub-village-facts">'+fact('Класс',d.klass)+fact('Тип',d.type)+fact('От МКАД',d.km?d.km+' км':'Уточняется')+fact('Участки',hubMln(d.price_land)||'По запросу')+fact('Дома с участком',hubMln(d.price_house)||'По запросу')+fact('Таунхаусы',hubMln(d.price_townhouse)||'По запросу')+fact('Мин. площадь участка',hubPriceValue(d.min_plot_sotka)?hubPriceValue(d.min_plot_sotka)+' сот.':'Не указана')+fact('Цена за сотку',hubRub(d.price_per_sotka_rub)||'Не указана')+fact('Статус',d.status)+'</div>'+(d.notes?'<section class="hub-village-section"><h3>О посёлке</h3><p style="white-space:pre-wrap">'+esc(d.notes)+'</p></section>':'')+(url(d.site)?'<section class="hub-village-section"><a href="'+esc(url(d.site))+'" target="_blank" rel="noopener noreferrer">Официальный сайт ↗</a></section>':'')+'<section id="hubVillagePrivate" class="hub-village-private hub-internal-only"><h3>🔒 Партнёрские условия</h3><p>Проверяем доступ…</p></section>';$('hubVillageOverlay').hidden=false;if(meeting){$('hubVillagePrivate')?.remove();return;}const client=db();if(!client)return;const {data:{session}}=await client.auth.getSession();if(token!==detailToken||meeting)return;if(!session){$('hubVillagePrivate')?.remove();return;}const {data:allowed,error:ae}=await client.rpc('is_hub_agent');if(token!==detailToken||meeting)return;if(ae||allowed!==true){$('hubVillagePrivate')?.remove();return;}let record=privateCache.get(name);if(!record){const {data:pub,error:pe}=await client.from('hub_settlements').select('id').eq('name',name).eq('visibility','published').limit(2);if(pe){$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Ошибка загрузки: '+esc(pe.message)+'</p>';return;}if(pub?.length!==1){$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Не удалось однозначно сопоставить запись. Проверьте название в админке.</p>';return;}const {data:priv,error:err}=await client.from('hub_settlement_private').select('commission,payment_terms,client_registration_terms,contact_name,contact_position,contact_phone,contact_telegram,contact_max,internal_notes').eq('settlement_id',pub[0].id).maybeSingle();if(err){if(token===detailToken&&!meeting)$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Не удалось получить данные: '+esc(err.message)+'</p>';return;}record=priv||{};privateCache.set(name,record);}if(token!==detailToken||meeting||$('hubVillageOverlay').hidden)return;const pairs=[['Комиссия',record.commission],['Порядок выплаты',record.payment_terms],['Фиксация клиента',record.client_registration_terms],['Куратор',record.contact_name],['Должность',record.contact_position],['Телефон',record.contact_phone],['Telegram',record.contact_telegram],['MAX',record.contact_max],['Внутренние примечания',record.internal_notes]];$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3>'+pairs.map(([k,v])=>'<div class="hub-village-private-row"><span>'+esc(k)+'</span><strong>'+esc(v||'Уточнить')+'</strong></div>').join('');}
+function fact(k,v){return v===null||v===undefined||String(v).trim()===''?'':'<div><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>';}
+async function loadVillageOffers(client,settlementId,token){
+ const host=$('hubVillageOffers');if(!host)return;
+ try{
+  const {data,error}=await client.from('hub_settlement_offers').select('plot_number,phase,plot_area_sqm,house_area_sqm,construction_stage,base_price_rub,promo_price_rub,promo_valid_until,availability,partner_confirmed_on,cadastral_number').eq('settlement_id',settlementId).order('plot_number');
+  if(error)throw error;
+  if(token!==detailToken||meeting||!host.isConnected)return;
+  if(!data?.length){host.innerHTML='<h3>Предложения и цены</h3><p>Объектный прайс пока не загружен.</p>';return;}
+  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Moscow'});
+  const rub=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(Number(n))+' ₽';
+  const stageLabels={warm_shell:'Тёплый контур',foundation:'Фундамент',vacant_plot:'Свободный участок',walls:'Возведены стены',land_only:'Участок без дома',under_construction:'Дом строится'};
+  // Derived only from loaded offers, never mix bundled house prices into land per-sotka metrics.
+  const available=data.filter(o=>o.availability==='available');
+  const areas=available.map(o=>Number(o.plot_area_sqm)).filter(n=>n>0);
+  const minArea=areas.length?Math.min(...areas)/100:null;
+  const landOnly=available.filter(o=>o.construction_stage==='land_only'&&Number(o.plot_area_sqm)>0);
+  const perSotka=landOnly.map(o=>Number(o.base_price_rub)/(Number(o.plot_area_sqm)/100)).filter(n=>n>0);
+  const facts=$('hubVillageContent')?.querySelectorAll('.hub-village-facts > div');
+  const landPrices=landOnly.map(o=>Number(o.base_price_rub)).filter(n=>Number.isFinite(n)&&n>0);
+  if(landPrices.length){
+    const wrap=$('hubVillageContent')?.querySelector('.hub-village-facts');
+    if(wrap){const existing=[...wrap.children].find(f=>f.querySelector('span')?.textContent?.trim()==='Участки');
+      const formatted='от '+new Intl.NumberFormat('ru-RU',{maximumFractionDigits:3}).format(Math.min(...landPrices)/1e6)+' млн ₽';
+      if(existing)existing.querySelector('strong').textContent=formatted;
+      else wrap.insertAdjacentHTML('beforeend',fact('Участки',formatted));
+    }
+  }
+  if(facts){for(const f of facts){const label=f.querySelector('span')?.textContent?.trim();const val=f.querySelector('strong');if(!val)continue;
+    if(label==='Мин. площадь участка'&&minArea!==null)val.textContent=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(minArea)+' сот.';
+    if(label==='Цена за сотку')val.textContent=perSotka.length?('от '+rub(Math.min(...perSotka))+' · по прайсу'):'Не рассчитывается для домов с участком';
+  }}
+  const rows=available.map(o=>{
+   const promo=o.promo_price_rub!==null&&o.promo_valid_until&&today<=o.promo_valid_until;
+   const expired=o.promo_price_rub!==null&&o.promo_valid_until&&today>o.promo_valid_until;
+   const stale=!o.partner_confirmed_on;
+   const price=expired?'Уточняется':rub(promo?o.promo_price_rub:o.base_price_rub);
+   return '<tr><td>№ '+esc(o.plot_number)+'</td><td>'+esc(o.plot_area_sqm/100)+' сот.</td><td>'+esc(o.house_area_sqm)+' м²</td><td>'+esc(stageLabels[o.construction_stage]||o.construction_stage||'—')+'</td><td><strong>'+price+'</strong>'+(promo?'<br><small style="color:#b45b00">Акция до '+esc(o.promo_valid_until.split('-').reverse().join('.'))+'</small>':'')+(expired?'<br><small>Требует подтверждения</small>':'')+(stale?'<br><small style="color:#b45b00">Дата подтверждения не указана</small>':'')+(o.availability==='reserved'?'<br><small>Бронь по прайсу</small>':'')+'</td></tr>';
+  }).join('');
+  if(!available.length){host.innerHTML='<h3>Предложения и цены</h3><p>Нет доступных предложений.</p>';return;}
+  host.innerHTML='<h3>Предложения и цены · '+available.length+'</h3><p class="hub-village-note">Наличие и актуальность цен уточняйте у партнёра.</p><div style="overflow:auto;max-height:370px"><table class="hub-offers-table"><thead><tr><th>Участок</th><th>Земля</th><th>Дом</th><th>Стадия</th><th>Цена</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+ }catch(e){if(token===detailToken&&host.isConnected)host.innerHTML='<h3>Предложения и цены</h3><p>Не удалось загрузить прайс: '+esc(e.message)+'</p>'}
+}
+async function openDetail(name){const token=++detailToken;const row=(window.SETTLEMENTS_DATA||[]).find(x=>x.name===name)||(typeof SETTLEMENTS_DATA!=='undefined'?SETTLEMENTS_DATA.find(x=>x.name===name):null);if(!row)return;const d=row;$('hubVillageTitle').textContent=d.name;$('hubVillageSubtitle').textContent=[d.partner,d.direction,d.highway].filter(Boolean).join(' · ');$('hubVillageContent').innerHTML=(url(d.photo)?'<img class="hub-village-hero" alt="Фото посёлка" src="'+esc(url(d.photo))+'">':'')+'<div class="hub-village-facts">'+fact('Класс',d.klass)+fact('Тип',d.type)+fact('От МКАД',d.km?d.km+' км':'Уточняется')+fact('Участки',hubMln(d.price_land))+fact('Дома с участком',hubMln(d.price_house))+fact('Таунхаусы',hubMln(d.price_townhouse))+fact('Мин. площадь участка',hubPriceValue(d.min_plot_sotka)?hubPriceValue(d.min_plot_sotka)+' сот.':'')+fact('Цена за сотку',hubRub(d.price_per_sotka_rub))+fact('Статус',d.status)+'</div>'+'<section class="hub-village-section hub-offers-section hub-internal-only" id="hubVillageOffers"><h3>Предложения и цены</h3><p>Загружаем подтверждённый прайс…</p></section>'+(d.notes?'<section class="hub-village-section"><h3>О посёлке</h3><p style="white-space:pre-wrap">'+esc(d.notes)+'</p></section>':'')+(url(d.site)?'<section class="hub-village-section"><a href="'+esc(url(d.site))+'" target="_blank" rel="noopener noreferrer">Официальный сайт ↗</a></section>':'')+'<section id="hubVillagePrivate" class="hub-village-private hub-internal-only"><h3>🔒 Партнёрские условия</h3><p>Проверяем доступ…</p></section>';$('hubVillageOverlay').hidden=false;if(meeting){$('hubVillagePrivate')?.remove();return;}const client=db();if(!client)return;const {data:{session}}=await client.auth.getSession();if(token!==detailToken||meeting)return;if(!session){$('hubVillagePrivate')?.remove();return;}const {data:allowed,error:ae}=await client.rpc('is_hub_agent');if(token!==detailToken||meeting)return;if(ae||allowed!==true){$('hubVillagePrivate')?.remove();return;}client.from('hub_settlements').select('id').eq('name',name).eq('visibility','published').maybeSingle().then(({data,error})=>{if(token!==detailToken||meeting)return;if(error||!data?.id){const el=$('hubVillageOffers');if(el)el.innerHTML='<h3>Предложения и цены</h3><p>Не удалось определить посёлок в базе.</p>';return;}loadVillageOffers(client,data.id,token)});let record=privateCache.get(name);if(!record){const {data:pub,error:pe}=await client.from('hub_settlements').select('id').eq('name',name).eq('visibility','published').limit(2);if(pe){$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Ошибка загрузки: '+esc(pe.message)+'</p>';return;}if(pub?.length!==1){$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Не удалось однозначно сопоставить запись. Проверьте название в админке.</p>';return;}const {data:priv,error:err}=await client.from('hub_settlement_private').select('commission,payment_terms,client_registration_terms,contact_name,contact_position,contact_phone,contact_telegram,contact_max,internal_notes').eq('settlement_id',pub[0].id).maybeSingle();if(err){if(token===detailToken&&!meeting)$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3><p>Не удалось получить данные: '+esc(err.message)+'</p>';return;}record=priv||{};privateCache.set(name,record);}if(token!==detailToken||meeting||$('hubVillageOverlay').hidden)return;const pairs=[['Комиссия',record.commission],['Порядок выплаты',record.payment_terms],['Фиксация клиента',record.client_registration_terms],['Куратор',record.contact_name],['Должность',record.contact_position],['Телефон',record.contact_phone],['Telegram',record.contact_telegram],['MAX',record.contact_max],['Внутренние примечания',record.internal_notes]];$('hubVillagePrivate').innerHTML='<h3>🔒 Партнёрские условия</h3>'+pairs.map(([k,v])=>'<div class="hub-village-private-row"><span>'+esc(k)+'</span><strong>'+esc(v||'Уточнить')+'</strong></div>').join('');}
 function init(){if(!$('hubMeetingToggle'))return;applyMeeting();$('hubMeetingToggle').onclick=()=>{if(meeting&&!confirm('Завершить встречу и снова показать внутреннюю информацию?'))return;meeting=!meeting;applyMeeting();if(!$('hubVillageOverlay').hidden){const n=$('hubVillageTitle').textContent;openDetail(n)} };$('hubProfileToggle').onclick=async()=>{const menu=$('hubProfileMenu');menu.hidden=!menu.hidden;$('hubProfileToggle').setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)await profile()};$('hubProfileAuthAction').onclick=()=>{$('hubProfileMenu').hidden=true;$('hub5AuthButton').click()};$('hubToolsToggle').onclick=()=>{const menu=$('hubToolsMenu'),toggle=$('hubToolsToggle');if(menu.parentElement!==document.body)document.body.appendChild(menu);const open=menu.hidden;menu.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(open){const r=toggle.getBoundingClientRect();menu.style.position='fixed';menu.style.top=(r.bottom+7)+'px';menu.style.left=Math.max(8,Math.min(r.left,innerWidth-238))+'px';menu.style.right='auto';}};for(const [id,target] of [['hubToolZouit','zouit'],['hubToolPlots','plots']])$(id).onclick=()=>{$('hubToolsMenu').hidden=true;$('hubToolsToggle').setAttribute('aria-expanded','false');document.querySelector('#hubTopnav [data-go="'+target+'"]').click();document.querySelectorAll('#hubTopnav [data-go]').forEach(b=>b.classList.remove('active'));$('hubToolsToggle').classList.add('active')};document.addEventListener('click',e=>{if(!e.target.closest('.hub-profile-wrap'))$('hubProfileMenu').hidden=true;if(!e.target.closest('.hub-tools-wrap')&&!e.target.closest('#hubToolsMenu')){$('hubToolsMenu').hidden=true;$('hubToolsToggle').setAttribute('aria-expanded','false');}const b=e.target.closest('[data-village-detail]');if(b){e.preventDefault();e.stopPropagation();openDetail(b.dataset.villageDetail)}} ,true);$('hubVillageClose').onclick=closeDetail;$('hubVillageOverlay').onclick=e=>{if(e.target===$('hubVillageOverlay'))closeDetail()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('hubVillageOverlay').hidden)closeDetail()});document.addEventListener('click',e=>{if(e.target.closest('#hubTopnav [data-go]')&&!e.target.closest('.hub-legacy-tool'))$('hubToolsToggle').classList.remove('active')});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
