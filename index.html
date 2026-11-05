@@ -922,7 +922,7 @@ html.hub5102-public-kp #hub5102Gate{display:none!important}
       </div>
       <div class="catalog-filters">
         <div class="filter-heading"><div><div class="eyebrow-v3">КАТАЛОГ НЕДВИЖИМОСТИ</div><h2>Подберите место для жизни</h2><p>Посёлки партнёров, проекты домов и инструменты ИЖС в одном пространстве.</p></div><span class="catalog-counter" id="catalogCounter">Загрузка…</span></div>
-        <div class="hub-pik-filter-bar"><button type="button" id="hubMobileFiltersButton" aria-expanded="false">☷ &nbsp; Фильтр <span id="hubMobileFilterCount"></span></button><button type="button" id="hubMobileMapShortcut">На карте 🗺️</button></div>
+        <div class="hub-pik-filter-bar"><button type="button" id="hubMobileFiltersButton" aria-expanded="false">☷ &nbsp; Фильтр <span id="hubMobileFilterCount"></span></button><button type="button" id="hubMobileMapShortcut" aria-pressed="false">На карте 🗺️</button></div>
         <div class="filter-controls">
           <label class="hub-name-search" for="settlementsSearch"><span class="hub-search-icon" aria-hidden="true">⌕</span><input id="settlementsSearch" class="hub-name-input" type="search" placeholder="Название посёлка" autocomplete="off" aria-label="Поиск по названию посёлка"></label>
           <label>Класс посёлка<select id="filterClass"><option value="">Все классы</option></select></label>
@@ -2502,6 +2502,17 @@ syncPercent();saved();calc();
 })();
 </script>
 
+<style id="hub-mobile-clean-catalog-v3">
+@media(max-width:740px){
+ /* One action row instead of two duplicate map/list controls. */
+ #panelSettlementsList .catalog-mode{display:none!important}
+ #panelSettlementsList .hub-mobile-view-switch{display:none!important}
+ #panelSettlementsList .catalog-filters{padding-bottom:7px!important}
+ #panelSettlementsList .hub-pik-filter-bar{padding:10px 12px 9px!important}
+ #panelSettlementsList #hubMobileMapShortcut[aria-pressed="true"]{background:#fff1e4;color:#a95400}
+ #panelSettlementsList #catalogWorkspace{padding-top:0!important}
+}
+</style>
 <style id="hub-mobile-pik-filter-and-partners-fix">
 /* Leaflet is the only visible map engine; Yandex implementation is retained. */
 #panelSettlementsList .hub-engine-switch{display:none!important}
@@ -2537,7 +2548,21 @@ syncPercent();saved();calc();
  const count=document.getElementById('hubMobileFilterCount');
  if(!panel||!btn||!shortcut)return;
  btn.addEventListener('click',()=>{const open=panel.classList.toggle('hub-filters-open');btn.setAttribute('aria-expanded',String(open));});
- shortcut.addEventListener('click',()=>document.getElementById('hubMobileMap')?.click());
+ const mapMode=document.getElementById('hubMobileMap');
+ const tilesMode=document.getElementById('hubMobileTiles');
+ const syncShortcut=()=>{
+   const showingMap=mapMode?.getAttribute('aria-pressed')==='true';
+   shortcut.textContent=showingMap?'К списку ▦':'На карте 🗺️';
+   shortcut.setAttribute('aria-pressed',String(showingMap));
+   shortcut.setAttribute('aria-label',showingMap?'Вернуться к списку посёлков':'Показать посёлки на карте');
+ };
+ shortcut.addEventListener('click',()=>{
+   const showingMap=mapMode?.getAttribute('aria-pressed')==='true';
+   (showingMap?tilesMode:mapMode)?.click();
+   syncShortcut();
+ });
+ [mapMode,tilesMode].forEach(el=>el?.addEventListener('click',syncShortcut));
+ syncShortcut();
  const ids=['settlementsSearch','filterClass','filterType','filterDirection','filterKm'];
  const update=()=>{const n=ids.filter(id=>String(document.getElementById(id)?.value||'').trim()).length;count.textContent=n?String(n):'';};
  ids.forEach(id=>document.getElementById(id)?.addEventListener('input',update));
