@@ -922,6 +922,7 @@ html.hub5102-public-kp #hub5102Gate{display:none!important}
       </div>
       <div class="catalog-filters">
         <div class="filter-heading"><div><div class="eyebrow-v3">КАТАЛОГ НЕДВИЖИМОСТИ</div><h2>Подберите место для жизни</h2><p>Посёлки партнёров, проекты домов и инструменты ИЖС в одном пространстве.</p></div><span class="catalog-counter" id="catalogCounter">Загрузка…</span></div>
+        <div class="hub-pik-filter-bar"><button type="button" id="hubMobileFiltersButton" aria-expanded="false">☷ &nbsp; Фильтр <span id="hubMobileFilterCount"></span></button><button type="button" id="hubMobileMapShortcut">На карте 🗺️</button></div>
         <div class="filter-controls">
           <label class="hub-name-search" for="settlementsSearch"><span class="hub-search-icon" aria-hidden="true">⌕</span><input id="settlementsSearch" class="hub-name-input" type="search" placeholder="Название посёлка" autocomplete="off" aria-label="Поиск по названию посёлка"></label>
           <label>Класс посёлка<select id="filterClass"><option value="">Все классы</option></select></label>
@@ -931,7 +932,7 @@ html.hub5102-public-kp #hub5102Gate{display:none!important}
           <button class="clear-filters" id="clearFilters" type="button">Сбросить фильтры</button>
           <button type="button" id="btnToggleSplit" class="hub-map-toggle" role="switch" aria-checked="true" aria-label="Показать карту"><span class="hub-map-toggle-label">Показать карту</span><span class="hub-switch-track"><span class="hub-switch-thumb"></span></span></button>
         </div>
-        <div class="catalog-mode"><span>Найденные предложения</span><div class="hub-engine-switch" role="group" aria-label="Движок карты"><button type="button" id="hubUseLeaflet" class="active" aria-pressed="true">Leaflet</button><button type="button" id="hubUseYandex" aria-pressed="false">Яндекс</button></div></div>
+        <div class="catalog-mode"><span>Найденные предложения</span><div class="hub-engine-switch" hidden role="group" aria-label="Движок карты"><button type="button" id="hubUseLeaflet" class="active" aria-pressed="true">Leaflet</button><button type="button" id="hubUseYandex" aria-pressed="false">Яндекс</button></div></div>
       </div>
       <div class="hub-mobile-view-switch" id="hubMobileViewSwitch" role="group" aria-label="Вид каталога посёлков"><button type="button" id="hubMobileTiles" aria-pressed="true">▦ Плитка</button><button type="button" id="hubMobileMap" aria-pressed="false">◉ Карта</button></div>
       <div class="catalog-workspace split" id="catalogWorkspace"><div class="list-scroll">
@@ -1681,7 +1682,7 @@ function initLeafletMap(){
  });
  lfMap.addLayer(lfCluster);
 }
-function leafletPopup(d){const selected=(loadSessionRaw().selectedSettlements||[]).some(x=>x.name===d.name);return `<div class="hub-map-popup"><strong>${escapeHtml(d.name)}</strong><p>${escapeHtml([d.partner,d.highway,d.km?d.km+' км от МКАД':''].filter(Boolean).join(' · '))}</p><p>${d.price_land?'Участок от '+escapeHtml(d.price_land)+' млн ₽':'Цена по запросу'}</p>${settlementBenefitsHtml(d)}<button type="button" data-map-pick="${escapeHtml(d.name)}">${selected?'✓ В подборке':'+ В подборку'}</button></div>`;}
+function leafletPopup(d){const selected=(loadSessionRaw().selectedSettlements||[]).some(x=>x.name===d.name);return `<div class="hub-map-popup"><strong>${escapeHtml(d.name)}</strong><p>${escapeHtml([d.partner,d.highway,d.km?d.km+' км от МКАД':''].filter(Boolean).join(' · '))}</p><p>${d.price_land?'Участок от '+escapeHtml(d.price_land)+' млн ₽':'Цена по запросу'}</p>${settlementBenefitsHtml(d)}<div class="hub-map-popup-actions"><button type="button" class="hub-map-detail" data-village-detail="${escapeHtml(d.name)}">Подробнее →</button><button type="button" data-map-pick="${escapeHtml(d.name)}">${selected?'✓ В подборке':'+ В подборку'}</button></div></div>`;}
 function leafletProjectIcon(d){
  const initials=String(d.name||'КП').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
  const img=d.photo?`<img src="${escapeHtml(d.photo)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'hub-marker-fallback',textContent:${JSON.stringify('⌂')}}))">`:`<span class="hub-marker-fallback">${escapeHtml(initials)}</span>`;
@@ -2498,6 +2499,50 @@ syncPercent();saved();calc();
     },true);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<style id="hub-mobile-pik-filter-and-partners-fix">
+/* Leaflet is the only visible map engine; Yandex implementation is retained. */
+#panelSettlementsList .hub-engine-switch{display:none!important}
+.hub-pik-filter-bar{display:none}
+.hub-map-popup-actions{display:flex;gap:8px;margin-top:12px}
+.hub-map-popup .hub-map-popup-actions button{flex:1;min-width:0;width:auto;font-size:12px;padding:10px 8px}
+.hub-map-popup .hub-map-popup-actions .hub-map-detail{background:#ff8001;color:white}
+.hub-map-popup .hub-map-popup-actions [data-map-pick]{background:#eff4f7;color:#253f50}
+@media(max-width:740px){
+ #panelSettlementsList .hub-pik-filter-bar{display:flex;gap:9px;padding:9px 12px 5px;align-items:center}
+ #hubMobileFiltersButton,#hubMobileMapShortcut{border:0;border-radius:999px;min-height:43px;padding:0 16px;background:#f0f2f4;color:#28343c;font:650 13px Inter,Arial,sans-serif;white-space:nowrap}
+ #hubMobileFiltersButton{flex:1;text-align:center}
+ #hubMobileMapShortcut{flex:1}
+ #hubMobileFilterCount:not(:empty){display:inline-block;background:#ff8001;color:#fff;border-radius:100px;padding:2px 6px;font-size:10px}
+ #panelSettlementsList .filter-controls{display:none!important}
+ #panelSettlementsList.hub-filters-open .filter-controls{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;gap:10px!important;padding:12px!important;background:#fff;border-radius:13px;margin:6px 12px 10px}
+ #panelSettlementsList.hub-filters-open .filter-controls label,#panelSettlementsList.hub-filters-open .filter-controls .hub-name-search{flex:1 1 100%!important;width:100%!important;min-width:0!important}
+ #panelSettlementsList.hub-filters-open .filter-controls input,#panelSettlementsList.hub-filters-open .filter-controls select{max-width:100%;width:100%;box-sizing:border-box}
+ #panelSettlementsList .filter-heading{padding-bottom:4px}
+ #panelContractorsCatalog .houses-filters{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;padding:0 0 18px!important;align-items:stretch}
+ #panelContractorsCatalog .houses-filters #partnerSearch,#panelContractorsCatalog .houses-filters #partnerTechnology{display:block!important;min-width:0!important;width:100%!important;max-width:100%!important;flex:none!important;box-sizing:border-box!important;margin:0!important}
+ #panelContractorsCatalog .houses-filters .partner-top-toggle{width:max-content;max-width:100%;box-sizing:border-box;margin:0!important}
+ #panelContractorsCatalog .partner-card{gap:12px!important;padding:22px 20px!important;min-height:245px}
+ #panelContractorsCatalog .partner-card .partner-bottom{margin-top:auto!important;padding-top:18px!important;gap:14px!important;flex-wrap:wrap;row-gap:8px}
+ #panelContractorsCatalog .partner-card .partner-bottom>span:last-child{margin-left:auto}
+}
+</style>
+<script id="hub-mobile-pik-filter-script">
+(function(){
+ const panel=document.getElementById('panelSettlementsList');
+ const btn=document.getElementById('hubMobileFiltersButton');
+ const shortcut=document.getElementById('hubMobileMapShortcut');
+ const count=document.getElementById('hubMobileFilterCount');
+ if(!panel||!btn||!shortcut)return;
+ btn.addEventListener('click',()=>{const open=panel.classList.toggle('hub-filters-open');btn.setAttribute('aria-expanded',String(open));});
+ shortcut.addEventListener('click',()=>document.getElementById('hubMobileMap')?.click());
+ const ids=['settlementsSearch','filterClass','filterType','filterDirection','filterKm'];
+ const update=()=>{const n=ids.filter(id=>String(document.getElementById(id)?.value||'').trim()).length;count.textContent=n?String(n):'';};
+ ids.forEach(id=>document.getElementById(id)?.addEventListener('input',update));
+ document.getElementById('clearFilters')?.addEventListener('click',()=>setTimeout(update,0));
+ update();
 })();
 </script>
 </body>
