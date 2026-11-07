@@ -1,23 +1,545 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ED e M · Кабинет партнёра</title><style>
-:root{font-family:Inter,system-ui,Arial,sans-serif;color:#1c2734;background:#f5f6f8}*{box-sizing:border-box}body{margin:0}header{background:#151a22;color:white;padding:20px max(24px,calc((100vw - 1000px)/2));display:flex;align-items:center;justify-content:space-between}header b{font:32px Georgia,serif}header em{color:#ff8001}main{max-width:1000px;margin:30px auto;padding:0 18px}.card{background:white;border:1px solid #e4e8ed;border-radius:18px;padding:24px;margin:16px 0;box-shadow:0 5px 20px #1111}h1{font-size:26px}h2{font-size:20px}label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #ccd5df;border-radius:9px;font:inherit}textarea{min-height:100px}button{border:0;border-radius:10px;background:#ff8001;color:white;padding:12px 18px;font-weight:700;cursor:pointer}button:disabled{opacity:.5}#notice[data-state="error"]{background:#ffe4e4}#notice[data-state="ok"]{background:#e9f7ee}.diagnostics{font-size:13px;color:#667789;margin-top:8px}.diagnostics button{padding:8px 12px;font-size:12px}button.secondary{background:#eef1f5;color:#1c2734}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.hidden{display:none!important}.muted{color:#667789}.alert{padding:12px;border-radius:9px;background:#fff1e6;margin:12px 0}.item{border:1px solid #e4e8ed;padding:16px;border-radius:12px;margin:10px 0}.pill{font-size:12px;background:#eef1f5;border-radius:20px;padding:5px 9px}#notice{white-space:pre-wrap}a{color:#017ab3}.file{background:#f6f7f9;padding:10px;border-radius:8px}.preview{display:flex;gap:8px;flex-wrap:wrap}.preview img{height:100px;max-width:160px;object-fit:cover;border-radius:8px}
-</style></head><body><header><div><b>ED <em>e</em> M</b> &nbsp; | &nbsp; ПАРТНЁРАМ</div><button class="secondary hidden" id="logout">Выйти</button></header><main><div id="notice" class="alert">Проверяем доступ…</div>
-<div class="diagnostics"><button class="secondary" id="checkConnection" type="button">Проверить соединение</button> <span id="connectionStatus" aria-live="polite"></span></div><section id="auth" class="card hidden"><h1>Кабинет партнёра</h1><p class="muted">Создавайте и редактируйте общие проекты вашей компании. Публикация — после модерации ED e M HUB.</p><div class="row"><button id="modeLogin">Вход</button><button id="modeRegister" class="secondary">Регистрация</button></div><form id="authForm"><div id="registerFields" class="hidden"><label>Компания</label><input id="company"><label>Контактное лицо</label><input id="contact"><label>Телефон</label><input id="phone"></div><label>Email</label><input id="email" type="email" required><label>Пароль (не менее 8 символов)</label><input id="password" type="password" minlength="8" required><p><button type="submit" id="authSubmit">Войти</button></p></form></section>
-<section id="request" class="card hidden"><h1>Заявка на партнёрский доступ</h1><p class="muted">Ваш аккаунт подтверждён. Отправьте заявку, администратор свяжет его с компанией из реестра подрядчиков.</p><form id="requestForm"><label>Компания</label><input name="company_name" required minlength="2"><label>Контактное лицо</label><input name="contact_name" required minlength="2"><label>Телефон</label><input name="phone" required minlength="7"><p><button>Отправить заявку</button></p></form></section>
-<section id="dashboard" class="hidden"><div class="row"><h1>Проекты компании</h1><button id="new">+ Добавить проект</button></div><p class="muted">Изменения опубликованного дома проходят повторную модерацию. До одобрения каталог остаётся без изменений.</p><div id="list"></div><section class="card hidden" id="editor"><h2 id="editorTitle">Новый проект</h2><form id="projectForm"><div class="row"><div><label>Название проекта</label><input name="name" required minlength="2"></div><div><label>Технология</label><select name="technology"><option>Каркас</option><option>Газобетон</option><option>Кирпич</option><option>Керамический блок</option><option>Брус</option><option>Монолит</option><option>Другая</option></select></div></div><div class="row"><div><label>Площадь, м²</label><input type="number" min="1" step=".01" name="area"></div><div><label>Этажей</label><input type="number" min="1" max="5" name="floors"></div><div><label>Спален</label><input type="number" min="0" max="30" name="bedrooms"></div></div><label>Стиль</label><input name="style"><label>Описание и комплектация</label><textarea name="description"></textarea><div class="row"><div><label>Тёплый контур, тыс. ₽/м²</label><input type="number" min="0" step="0.1" name="price_warm_min"></div><div><label>White box, тыс. ₽/м²</label><input type="number" min="0" step="0.1" name="price_white_min"></div><div><label>Под ключ, тыс. ₽/м²</label><input type="number" min="0" step="0.1" name="price_turnkey_min"></div></div><p><button type="submit">Сохранить черновик</button></p></form><div id="photos" class="hidden"><h2>Фотографии и планировки</h2><p class="muted">JPG, PNG, WebP, до 10 МБ. Для отправки проекта нужна хотя бы одна фотография.</p><select id="kind"><option value="photo">Фотография</option><option value="floorplan">Планировка</option></select><input id="files" class="file" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="previews" class="preview"></div><p><button id="submitProject">Отправить на модерацию</button></p></div></section></section>
-</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script>
-(()=>{'use strict';if(!window.supabase?.createClient){document.getElementById('notice').textContent='Не загрузилась библиотека Supabase. Проверьте доступность cdn.jsdelivr.net, блокировщики и сеть.';document.getElementById('auth').classList.remove('hidden');document.getElementById('checkConnection').disabled=true;return;}const db=window.supabase.createClient('https://vnkxhmvjsgaogxwpwgla.supabase.co','sb_publishable_pHSDyJPe_fR83Jk6_c82JQ_J2o-rhhZ');const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let user=null,member=null,items=[],team=[],current=null,mode='login';const note=(s,bad=false)=>{$('notice').textContent=s;$('notice').dataset.state=bad?'error':'info'};
-const networkError=e=>{const message=String(e?.message||e||'');return /failed to fetch|networkerror|load failed|fetch failed|network request failed/i.test(message)};
-function report(e,context='запрос'){if(networkError(e)){note('Не удалось связаться с Supabase ('+context+'). Это сетевая ошибка, а не подтверждение неверного пароля. Нажмите «Проверить соединение»; если запрос блокируется, проверьте расширения браузера, VPN, DNS и вкладку Network в инструментах разработчика.',true)}else note(e?.message||String(e),true);}
-async function checkConnection(){const el=$('connectionStatus');el.textContent='Проверяем доступ к API…';const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);try{const url='https://vnkxhmvjsgaogxwpwgla.supabase.co/auth/v1/health';const r=await fetch(url,{method:'GET',cache:'no-store',signal:controller.signal});el.textContent=r.ok?'Сервер авторизации доступен (HTTP '+r.status+').':'Сервер ответил HTTP '+r.status+' — проверьте настройки проекта.';if(r.ok)note('Соединение с сервером авторизации есть. Если вход всё ещё не работает, откройте Network и проверьте запрос /auth/v1/token.');}catch(e){el.textContent=e?.name==='AbortError'?'Превышено время ожидания (10 секунд).':'Запрос заблокирован или сеть недоступна: '+(e?.message||e);report(e,'проверка соединения')}finally{clearTimeout(timeout)}}
-$('checkConnection').onclick=checkConnection;
-const view=id=>['auth','request','dashboard'].forEach(x=>$(x).classList.toggle('hidden',x!==id));function fail(e){throw Error(e?.message||String(e))}
-async function refresh(){const {data:{user:u}}=await db.auth.getUser();user=u;$('logout').classList.toggle('hidden',!u);if(!u){view('auth');note('Войдите или зарегистрируйтесь. После регистрации подтвердите email.');return}const {data:m,error:me}=await db.from('hub_partner_members').select('*').eq('user_id',u.id).maybeSingle();if(me)fail(me);member=m;if(m?.status==='active'){view('dashboard');note('Партнёрский доступ активен. Проекты публикуются только после проверки администратором.');await loadTeam();await load();return}const {data:r,error:re}=await db.from('hub_partner_requests').select('*').eq('user_id',u.id).maybeSingle();if(re)fail(re);if(r){view('request');$('requestForm').classList.add('hidden');note(r.status==='pending'?'Заявка отправлена. Ожидайте решения администратора.':r.status==='rejected'?'Заявка отклонена. Свяжитесь с администратором.':'Заявка одобрена. Обновите страницу.');return}view('request');$('requestForm').classList.remove('hidden');note('Заполните заявку на доступ к кабинету.');}
-function setMode(m){mode=m;$('registerFields').classList.toggle('hidden',m!=='register');$('authSubmit').textContent=m==='register'?'Зарегистрироваться':'Войти';$('modeLogin').className=m==='login'?'':'secondary';$('modeRegister').className=m==='register'?'':'secondary'}$('modeLogin').onclick=()=>setMode('login');$('modeRegister').onclick=()=>setMode('register');$('logout').onclick=async()=>{await db.auth.signOut();await refresh()};$('authForm').onsubmit=async e=>{e.preventDefault();try{let email=$('email').value.trim(),password=$('password').value;if(mode==='register'){if(!$('company').value.trim()||!$('contact').value.trim()||!$('phone').value.trim())throw Error('Заполните данные компании');const {error}=await db.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)fail(error);view('auth');note('Регистрация отправлена! Проверьте электронную почту и подтвердите адрес по ссылке. Затем войдите и подайте заявку.');setMode('login')}else{const {error}=await db.auth.signInWithPassword({email,password});if(error)fail(error);await refresh()}}catch(e){report(e,"операция кабинета")}};
-$('requestForm').onsubmit=async e=>{e.preventDefault();try{const f=new FormData(e.target);const {error}=await db.from('hub_partner_requests').insert({user_id:user.id,company_name:f.get('company_name'),contact_name:f.get('contact_name'),phone:f.get('phone')});if(error)fail(error);await refresh()}catch(e){report(e,"операция кабинета")}};
-async function loadTeam(){const {data,error}=await db.from('hub_partner_members').select('user_id,role').eq('contractor_id',member.contractor_id).eq('status','active');if(error)fail(error);team=data||[]}const who=id=>{if(!id)return '—';const m=team.find(x=>x.user_id===id);return (m?.role==='company_admin'?'Администратор':'Сотрудник')+' · '+String(id).slice(0,8)};async function load(){const {data,error}=await db.from('hub_partner_submissions').select('*').order('created_at',{ascending:false});if(error)fail(error);items=data||[];$('list').innerHTML=items.length?items.map(x=>`<div class="item"><b>${esc(x.name)}</b> <span class="pill">${esc(({draft:'Черновик',review:'На проверке',revision:'На доработке',published:'Опубликован',rejected:'Отклонён'})[x.status]||x.status)}</span><p class="muted">Создал: ${esc(who(x.owner_id))} · Последнее изменение: ${esc(who(x.last_edited_by||x.owner_id))}</p><p class="muted">${x.status==='published'&&!x.published_project_id?'Проект удалён из каталога · история сохранена':x.revision_of_project_id?'Изменения существующего проекта · '+esc(x.moderator_note||''):esc(x.moderator_note||'')}</p>${['draft','revision'].includes(x.status)?`<button class="secondary" data-edit="${x.id}">Редактировать</button>`:''}</div>`).join(''):'<div class="card">Пока нет проектов. Нажмите «Добавить проект».</div>'}
-$('new').onclick=()=>edit(null);$('list').onclick=async e=>{const b=e.target.closest('[data-edit],[data-start-revision]');if(!b)return;if(b.dataset.edit){edit(items.find(x=>x.id===b.dataset.edit));return;}b.disabled=true;try{const source=items.find(x=>x.id===b.dataset.startRevision);const existing=items.find(x=>x.revision_of_project_id===source?.published_project_id&&['draft','review','revision'].includes(x.status));if(existing){if(['draft','revision'].includes(existing.status))edit(existing);else note('Изменения уже ожидают модерации.');return;}const {data,error}=await db.rpc('hub_partner_start_revision',{p_submission_id:b.dataset.startRevision});if(error)fail(error);await load();const draft=items.find(x=>x.id===data);if(draft)edit(draft);note('Создан черновик изменений. Опубликованный проект не изменится до одобрения.')}catch(err){report(err,"операция кабинета")}finally{b.disabled=false}};function edit(x){current=x||null;$('editor').classList.remove('hidden');$('editorTitle').textContent=x?'Редактировать: '+x.name:'Новый проект';$('projectForm').reset();if(x)for(const [k,v] of Object.entries(x)){const el=$('projectForm').elements.namedItem(k);if(el)el.value=v??''}$('photos').classList.toggle('hidden',!x);if(x)images();$('editor').scrollIntoView({behavior:'smooth'})}
-$('projectForm').onsubmit=async e=>{e.preventDefault();try{const data=Object.fromEntries(new FormData(e.target));for(const k of ['area','floors','bedrooms','price_warm_min','price_white_min','price_turnkey_min'])data[k]=data[k]===''?null:Number(data[k]);let result;if(current){result=await db.from('hub_partner_submissions').update(data).eq('id',current.id).select().single()}else{result=await db.from('hub_partner_submissions').insert({...data,owner_id:user.id,contractor_id:member.contractor_id}).select().single()}if(result.error)fail(result.error);current=result.data;note('Черновик сохранён. Добавьте фотографии и отправьте на проверку.');$('photos').classList.remove('hidden');await images();await load()}catch(e){report(e,"операция кабинета")}};
-async function images(){if(!current)return;const {data,error}=await db.from('hub_partner_submission_images').select('*').eq('submission_id',current.id).order('sort_order');if(error)fail(error);$('previews').innerHTML=(data||[]).map(i=>`<img alt="${esc(i.kind)}" src="${esc(db.storage.from('house-images').getPublicUrl(i.storage_path).data.publicUrl)}">`).join('')}
-$('files').onchange=async e=>{if(!current)return;try{for(const f of e.target.files){if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>10*1024*1024)throw Error('Допустимы JPG, PNG, WebP до 10 МБ');const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg';const path=`partner/${user.id}/${current.id}/${crypto.randomUUID()}.${ext}`;const {error:up}=await db.storage.from('house-images').upload(path,f,{contentType:f.type});if(up)fail(up);const {error:ins}=await db.from('hub_partner_submission_images').insert({submission_id:current.id,storage_path:path,kind:$('kind').value});if(ins)fail(ins)}await images();note('Файлы загружены.')}catch(err){report(err,"операция кабинета")}finally{e.target.value=''}};
-$('submitProject').onclick=async()=>{if(!current)return;try{const {error}=await db.rpc('hub_partner_submit',{p_id:current.id});if(error)fail(error);$('editor').classList.add('hidden');note('Проект отправлен на модерацию.');await load()}catch(e){report(e,"операция кабинета")}};db.auth.onAuthStateChange(()=>{});refresh().catch(e=>{report(e,"проверка сессии");if(!user)view("auth")});})();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   ED e M · Кабинет партнёра
+  </title>
+  <style>
+:root {
+  font-family:Inter,system-ui,Arial,sans-serif;
+  color:#1c2734;
+  background:#f5f6f8}
+* {
+  box-sizing:border-box}
+body {
+  margin:0}
+header {
+  background:#151a22;
+  color:white;
+  padding:20px max(24px,calc((100vw - 1000px)/2));
+  display:flex;
+  align-items:center;
+  justify-content:space-between}
+header b {
+  font:32px Georgia,serif}
+header em {
+  color:#ff8001}
+main {
+  max-width:1000px;
+  margin:30px auto;
+  padding:0 18px}
+.card {
+  background:white;
+  border:1px solid #e4e8ed;
+  border-radius:18px;
+  padding:24px;
+  margin:16px 0;
+  box-shadow:0 5px 20px #1111}
+h1 {
+  font-size:26px}
+h2 {
+  font-size:20px}
+label {
+  display:block;
+  font-weight:600;
+  font-size:13px;
+  margin:12px 0 5px}
+input,textarea,select {
+  width:100%;
+  padding:11px;
+  border:1px solid #ccd5df;
+  border-radius:9px;
+  font:inherit}
+textarea {
+  min-height:100px}
+button {
+  border:0;
+  border-radius:10px;
+  background:#ff8001;
+  color:white;
+  padding:12px 18px;
+  font-weight:700;
+  cursor:pointer}
+button:disabled {
+  opacity:.5}
+#notice[data-state="error"] {
+  background:#ffe4e4}
+#notice[data-state="ok"] {
+  background:#e9f7ee}
+.diagnostics {
+  font-size:13px;
+  color:#667789;
+  margin-top:8px}
+.diagnostics button {
+  padding:8px 12px;
+  font-size:12px}
+button.secondary {
+  background:#eef1f5;
+  color:#1c2734}
+.row {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap}
+.row>* {
+  flex:1}
+.hidden {
+  display:none!important}
+.muted {
+  color:#667789}
+.alert {
+  padding:12px;
+  border-radius:9px;
+  background:#fff1e6;
+  margin:12px 0}
+.item {
+  border:1px solid #e4e8ed;
+  padding:16px;
+  border-radius:12px;
+  margin:10px 0}
+.pill {
+  font-size:12px;
+  background:#eef1f5;
+  border-radius:20px;
+  padding:5px 9px}
+#notice {
+  white-space:pre-wrap}
+a {
+  color:#017ab3}
+.file {
+  background:#f6f7f9;
+  padding:10px;
+  border-radius:8px}
+.preview {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap}
+
+.preview img {
+  height:100px;
+  max-width:160px;
+  object-fit:cover;
+  border-radius:8px}
+
+.project-item {
+  display:flex;
+  gap:16px;
+  align-items:flex-start}
+
+.project-cover {
+  width:150px;
+  height:112px;
+  flex:none;
+  object-fit:cover;
+  border-radius:11px;
+  background:#e9edf2}
+
+.project-cover-empty {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#7d8a98;
+  font-size:12px;
+  text-align:center;
+  padding:10px}
+
+.project-content {
+  min-width:0;
+  flex:1}
+
+.project-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px}
+
+.project-actions button {
+  padding:9px 13px}
+
+.photo-tile {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  max-width:160px}
+
+.photo-tile img {
+  width:160px;
+  height:105px;
+  object-fit:cover;
+  border-radius:8px}
+
+.photo-tile button {
+  font-size:12px;
+  padding:7px;
+  background:#eef1f5;
+  color:#1c2734}
+
+.photo-tile .cover-tag {
+  font-size:11px;
+  color:#667789}
+
+@media(max-width:600px) {
+  .project-item {
+  gap:12px}
+.project-cover {
+  width:105px;
+  height:90px}
+.item {
+  padding:12px}
+header {
+  padding:16px}
+main {
+  margin:18px auto}
+}
+</style>
+ </head>
+ <body>
+  <header>
+   <div>
+    <b>
+     ED
+     <em>
+      e
+     </em>
+     M
+    </b>
+    |   ПАРТНЁРАМ
+   </div>
+   <button class="secondary hidden" id="logout">
+    Выйти
+   </button>
+  </header>
+  <main>
+   <div class="alert" id="notice">
+    Проверяем доступ…
+   </div>
+   <div class="diagnostics">
+    <button class="secondary" id="checkConnection" type="button">
+     Проверить соединение
+    </button>
+    <span aria-live="polite" id="connectionStatus">
+    </span>
+   </div>
+   <section class="card hidden" id="auth">
+    <h1>
+     Кабинет партнёра
+    </h1>
+    <p class="muted">
+     Создавайте и редактируйте общие проекты вашей компании. Публикация — после модерации ED e M HUB.
+    </p>
+    <div class="row">
+     <button id="modeLogin">
+      Вход
+     </button>
+     <button class="secondary" id="modeRegister">
+      Регистрация
+     </button>
+    </div>
+    <form id="authForm">
+     <div class="hidden" id="registerFields">
+      <label>
+       Компания
+      </label>
+      <input id="company"/>
+      <label>
+       Контактное лицо
+      </label>
+      <input id="contact"/>
+      <label>
+       Телефон
+      </label>
+      <input id="phone"/>
+     </div>
+     <label>
+      Email
+     </label>
+     <input id="email" required="" type="email"/>
+     <label>
+      Пароль (не менее 8 символов)
+     </label>
+     <input id="password" minlength="8" required="" type="password"/>
+     <p>
+      <button id="authSubmit" type="submit">
+       Войти
+      </button>
+     </p>
+    </form>
+   </section>
+   <section class="card hidden" id="request">
+    <h1>
+     Заявка на партнёрский доступ
+    </h1>
+    <p class="muted">
+     Ваш аккаунт подтверждён. Отправьте заявку, администратор свяжет его с компанией из реестра подрядчиков.
+    </p>
+    <form id="requestForm">
+     <label>
+      Компания
+     </label>
+     <input minlength="2" name="company_name" required=""/>
+     <label>
+      Контактное лицо
+     </label>
+     <input minlength="2" name="contact_name" required=""/>
+     <label>
+      Телефон
+     </label>
+     <input minlength="7" name="phone" required=""/>
+     <p>
+      <button>
+       Отправить заявку
+      </button>
+     </p>
+    </form>
+   </section>
+   <section class="hidden" id="dashboard">
+    <div class="row">
+     <h1>
+      Проекты компании
+     </h1>
+     <button id="new">
+      + Добавить проект
+     </button>
+    </div>
+    <p class="muted">
+     Изменения опубликованного дома проходят повторную модерацию. До одобрения каталог остаётся без изменений.
+    </p>
+    <div id="list">
+    </div>
+    <section class="card hidden" id="editor">
+     <h2 id="editorTitle">
+      Новый проект
+     </h2>
+     <form id="projectForm">
+      <div class="row">
+       <div>
+        <label>
+         Название проекта
+        </label>
+        <input minlength="2" name="name" required=""/>
+       </div>
+       <div>
+        <label>
+         Технология
+        </label>
+        <select name="technology">
+         <option>
+          Каркас
+         </option>
+         <option>
+          Газобетон
+         </option>
+         <option>
+          Кирпич
+         </option>
+         <option>
+          Керамический блок
+         </option>
+         <option>
+          Брус
+         </option>
+         <option>
+          Монолит
+         </option>
+         <option>
+          Другая
+         </option>
+        </select>
+       </div>
+      </div>
+      <div class="row">
+       <div>
+        <label>
+         Площадь, м²
+        </label>
+        <input min="1" name="area" step=".01" type="number"/>
+       </div>
+       <div>
+        <label>
+         Этажей
+        </label>
+        <input max="5" min="1" name="floors" type="number"/>
+       </div>
+       <div>
+        <label>
+         Спален
+        </label>
+        <input max="30" min="0" name="bedrooms" type="number"/>
+       </div>
+      </div>
+      <label>
+       Стиль
+      </label>
+      <input name="style"/>
+      <label>
+       Описание и комплектация
+      </label>
+      <textarea name="description"></textarea>
+      <div class="row">
+       <div>
+        <label>
+         Тёплый контур, тыс. ₽/м²
+        </label>
+        <input min="0" name="price_warm_min" step="0.1" type="number"/>
+       </div>
+       <div>
+        <label>
+         White box, тыс. ₽/м²
+        </label>
+        <input min="0" name="price_white_min" step="0.1" type="number"/>
+       </div>
+       <div>
+        <label>
+         Под ключ, тыс. ₽/м²
+        </label>
+        <input min="0" name="price_turnkey_min" step="0.1" type="number"/>
+       </div>
+      </div>
+      <p>
+       <button type="submit">
+        Сохранить черновик
+       </button>
+      </p>
+     </form>
+     <div class="hidden" id="photos">
+      <h2>
+       Фотографии и планировки
+      </h2>
+      <p class="muted">
+       JPG, PNG, WebP, до 10 МБ. Первое фото используется как обложка. Можно удалить устаревшие снимки и загрузить новые.
+      </p>
+      <select id="kind">
+       <option value="photo">
+        Фотография
+       </option>
+       <option value="floorplan">
+        Планировка
+       </option>
+      </select>
+      <input accept="image/png,image/jpeg,image/webp" class="file" id="files" multiple="" type="file"/>
+      <div class="preview" id="previews">
+      </div>
+      <p>
+       <button id="submitProject">
+        Отправить на модерацию
+       </button>
+      </p>
+     </div>
+    </section>
+   </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+  </script>
+  <script>
+(() => {  
+'use strict'; if (!window.supabase?.createClient) { document.getElementById('notice').textContent = 'Не загрузилась библиотека Supabase. Проверьте доступность cdn.jsdelivr.net, блокировщики и сеть.'; document.getElementById('auth').classList.remove('hidden'); document.getElementById('checkConnection').disabled = true; return; } const db = window.supabase.createClient('https://vnkxhmvjsgaogxwpwgla.supabase.co', 'sb_publishable_pHSDyJPe_fR83Jk6_c82JQ_J2o-rhhZ'); const $ = id => document.getElementById(id); const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); let user = null, member = null, items = [], team = [], current = null, mode = 'login'; const note = (s, bad = false) => { $('notice').textContent = s; $('notice').dataset.state = bad ? 'error' : 'info' };
+  const networkError = e => { const message = String(e?.message || e || ''); return /failed to fetch|networkerror|load failed|fetch failed|network request failed/i.test(message) };
+  function report(e, context = 'запрос') { if (networkError(e)) { note('Не удалось связаться с Supabase (' + context + '). Это сетевая ошибка, а не подтверждение неверного пароля. Нажмите «Проверить соединение»; если запрос блокируется, проверьте расширения браузера, VPN, DNS и вкладку Network в инструментах разработчика.', true) } else note(e?.message || String(e), true); }
+  async function checkConnection() {
+    const el = $('connectionStatus');
+    el.textContent = 'Проверяем подключение…';
+    try {
+      const { data, error } = await db.auth.getSession();
+      if (error) fail(error);
+      if (data.session) {
+        const { error: pingError } = await db.from('hub_partner_members').select('user_id').limit(1);
+        if (pingError) fail(pingError);
+        el.textContent = 'Соединение работает. Авторизация активна.';
+      } else {
+        el.textContent = 'Нет активной сессии. Подключение к серверу проверится при входе.';
+      }
+    } catch (e) { el.textContent = 'Ошибка подключения: ' + (e?.message || e); report(e, 'проверка соединения') }
+  }
+  $('checkConnection').onclick = checkConnection;
+  const view = id => ['auth', 'request', 'dashboard'].forEach(x => $(x).classList.toggle('hidden', x !== id)); function fail(e) { throw Error(e?.message || String(e)) }
+  async function refresh() { const { data: { user: u } } = await db.auth.getUser(); user = u; $('logout').classList.toggle('hidden', !u); if (!u) { view('auth'); note('Войдите или зарегистрируйтесь. После регистрации подтвердите email.'); return } const { data: m, error: me } = await db.from('hub_partner_members').select('*').eq('user_id', u.id).maybeSingle(); if (me) fail(me); member = m; if (m?.status === 'active') { view('dashboard'); note('Партнёрский доступ активен. Проекты публикуются только после проверки администратором.'); await loadTeam(); await load(); return } const { data: r, error: re } = await db.from('hub_partner_requests').select('*').eq('user_id', u.id).maybeSingle(); if (re) fail(re); if (r) { view('request'); $('requestForm').classList.add('hidden'); note(r.status === 'pending' ? 'Заявка отправлена. Ожидайте решения администратора.' : r.status === 'rejected' ? 'Заявка отклонена. Свяжитесь с администратором.' : 'Заявка одобрена. Обновите страницу.'); return } view('request'); $('requestForm').classList.remove('hidden'); note('Заполните заявку на доступ к кабинету.'); }
+  function setMode(m) { mode = m; $('registerFields').classList.toggle('hidden', m !== 'register'); $('authSubmit').textContent = m === 'register' ? 'Зарегистрироваться' : 'Войти'; $('modeLogin').className = m === 'login' ? '' : 'secondary'; $('modeRegister').className = m === 'register' ? '' : 'secondary' } $('modeLogin').onclick = () => setMode('login'); $('modeRegister').onclick = () => setMode('register'); $('logout').onclick = async () => { await db.auth.signOut(); await refresh() }; $('authForm').onsubmit = async e => { e.preventDefault(); try { let email = $('email').value.trim(), password = $('password').value; if (mode === 'register') { if (!$('company').value.trim() || !$('contact').value.trim() || !$('phone').value.trim()) throw Error('Заполните данные компании'); const { error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } }); if (error) fail(error); view('auth'); note('Регистрация отправлена! Проверьте электронную почту и подтвердите адрес по ссылке. Затем войдите и подайте заявку.'); setMode('login') } else { const { error } = await db.auth.signInWithPassword({ email, password }); if (error) fail(error); await refresh() } } catch (e) { report(e, "операция кабинета") } };
+  $('requestForm').onsubmit = async e => { e.preventDefault(); try { const f = new FormData(e.target); const { error } = await db.from('hub_partner_requests').insert({ user_id: user.id, company_name: f.get('company_name'), contact_name: f.get('contact_name'), phone: f.get('phone') }); if (error) fail(error); await refresh() } catch (e) { report(e, "операция кабинета") } };
+  async function loadTeam() { const { data, error } = await db.from('hub_partner_members').select('user_id,role').eq('contractor_id', member.contractor_id).eq('status', 'active'); if (error) fail(error); team = data || [] } const who = id => { if (!id) return '—'; const m = team.find(x => x.user_id === id); return (m?.role === 'company_admin' ? 'Администратор' : 'Сотрудник') + ' · ' + String(id).slice(0, 8) };
+  async function load() {
+    const { data, error } = await db.from('hub_partner_submissions').select('*').order('created_at', { ascending: false });
+    if (error) fail(error);
+    items = data || [];
+    const ids = items.map(x => x.id);
+    let covers = new Map();
+    if (ids.length) {
+      const { data: photos, error: photoError } = await db.from('hub_partner_submission_images')
+        .select('submission_id,storage_path,kind,sort_order').in('submission_id', ids).order('sort_order');
+      if (photoError) { console.warn('Не удалось получить обложки проектов:', photoError.message) }
+      else {
+        const grouped = new Map();
+        for (const photo of photos || []) {
+          if (!grouped.has(photo.submission_id)) grouped.set(photo.submission_id, []);
+          grouped.get(photo.submission_id).push(photo);
+        }
+        for (const [id, group] of grouped) {
+          const cover = group.find(p => p.kind === 'photo') || group[0];
+          if (cover) covers.set(id, db.storage.from('house-images').getPublicUrl(cover.storage_path).data.publicUrl);
+        }
+      }
+    }
+    const labels = { draft: 'Черновик', review: 'На проверке', revision: 'На доработке', published: 'Опубликован', rejected: 'Отклонён' };
+    $('list').innerHTML = items.length ? items.map(x => {
+      const canEdit = ['draft', 'revision'].includes(x.status);
+      const published = x.status === 'published' && !!x.published_project_id;
+      const pending = published && items.some(y => y.revision_of_project_id === x.published_project_id && ['draft', 'review', 'revision'].includes(y.status));
+      const cover = covers.get(x.id);
+      const coverHtml = cover ? `<img class="project-cover" src="${esc(cover)}" alt="Обложка проекта ${esc(x.name)}" loading="lazy">` :
+        '<div class="project-cover project-cover-empty">Нет обложки</div>';
+      const action = canEdit ? `<button class="secondary" data-edit="${esc(x.id)}">Редактировать проект</button>` :
+        published && !pending ? `<button class="secondary" data-start-revision="${esc(x.id)}">Обновить проект</button>` :
+          published && pending ? '<span class="muted">Обновление уже на модерации</span>' :
+            '<span class="muted">Ожидает решения администратора</span>';
+      return `<div class="item project-item">${coverHtml}<div class="project-content">
+     <b>${esc(x.name)}</b> <span class="pill">${esc(labels[x.status] || x.status)}</span>
+     <p class="muted">Создал: ${esc(who(x.owner_id))} · Последнее изменение: ${esc(who(x.last_edited_by || x.owner_id))}</p>
+     ${x.status === 'published' && !x.published_project_id ? '<p class="muted">Проект удалён из каталога · история сохранена</p>' : ''}
+     ${x.moderator_note ? `<p class="muted">${esc(x.moderator_note)}</p>` : ''}
+     <div class="project-actions">${action}</div>
+   </div></div>`;
+    }).join('') : '<div class="card">Пока нет проектов. Нажмите «Добавить проект».</div>';
+  }
+  $('new').onclick = () => edit(null); $('list').onclick = async e => { const b = e.target.closest('[data-edit],[data-start-revision]'); if (!b) return; if (b.dataset.edit) { edit(items.find(x => x.id === b.dataset.edit)); return; } b.disabled = true; try { const source = items.find(x => x.id === b.dataset.startRevision); if (!source?.published_project_id) throw Error('У проекта нет связанной опубликованной версии. Обратитесь к администратору.'); const existing = items.find(x => x.revision_of_project_id === source?.published_project_id && ['draft', 'review', 'revision'].includes(x.status)); if (existing) { if (['draft', 'revision'].includes(existing.status)) edit(existing); else note('Изменения уже ожидают модерации.'); return; } const { data, error } = await db.rpc('hub_partner_start_revision', { p_submission_id: b.dataset.startRevision }); if (error) fail(error); await load(); const draft = items.find(x => x.id === data); if (draft) edit(draft); note('Создан черновик изменений. Опубликованный проект не изменится до одобрения.') } catch (err) { report(err, "операция кабинета") } finally { b.disabled = false } };
+  function edit(x) { current = x || null; $('editor').classList.remove('hidden'); $('editorTitle').textContent = x ? 'Редактировать: ' + x.name : 'Новый проект'; $('projectForm').reset(); if (x) for (const [k, v] of Object.entries(x)) { const el = $('projectForm').elements.namedItem(k); if (el) el.value = v ?? '' } $('photos').classList.toggle('hidden', !x); if (x) images().catch(err => report(err, 'загрузка фотографий')); else $('previews').innerHTML = ''; $('editor').scrollIntoView({ behavior: 'smooth' }) }
+  $('projectForm').onsubmit = async e => { e.preventDefault(); try { const data = Object.fromEntries(new FormData(e.target)); for (const k of ['area', 'floors', 'bedrooms', 'price_warm_min', 'price_white_min', 'price_turnkey_min']) data[k] = data[k] === '' ? null : Number(data[k]); let result; if (current) { result = await db.from('hub_partner_submissions').update(data).eq('id', current.id).select().single() } else { result = await db.from('hub_partner_submissions').insert({ ...data, owner_id: user.id, contractor_id: member.contractor_id }).select().single() } if (result.error) fail(result.error); current = result.data; note('Черновик сохранён. Добавьте фотографии и отправьте на проверку.'); $('photos').classList.remove('hidden'); await images(); await load() } catch (e) { report(e, "операция кабинета") } };
+  async function images() {
+    if (!current) return;
+    const { data, error } = await db.from('hub_partner_submission_images').select('*')
+      .eq('submission_id', current.id).order('sort_order');
+    if (error) fail(error);
+    const photos = data || [];
+    const coverId = (photos.find(i => i.kind === 'photo') || photos[0])?.id;
+    $('previews').innerHTML = photos.map(i => {
+      const url = db.storage.from('house-images').getPublicUrl(i.storage_path).data.publicUrl;
+      return `<div class="photo-tile"><img alt="${esc(i.kind)}" src="${esc(url)}">
+     <span class="cover-tag">${i.id === coverId ? 'Обложка · ' : ''}${i.kind === 'floorplan' ? 'Планировка' : 'Фото'}</span>
+     <button type="button" data-remove-image="${esc(i.id)}">Удалить</button></div>`;
+    }).join('');
+  }
+  $('previews').onclick = async e => {
+    const button = e.target.closest('[data-remove-image]');
+    if (!button || !current) return;
+    if (!confirm('Удалить фотографию из черновика?')) return;
+    button.disabled = true;
+    try {
+      const id = button.dataset.removeImage;
+      const { data: photo, error: findError } = await db.from('hub_partner_submission_images')
+        .select('id,storage_path').eq('id', id).eq('submission_id', current.id).single();
+      if (findError) fail(findError);
+      const { data: removed, error: deleteError } = await db.from('hub_partner_submission_images')
+        .delete().eq('id', id).eq('submission_id', current.id).select('id');
+      if (deleteError) fail(deleteError);
+      if (!removed?.length) throw Error('Удаление запрещено политикой доступа Supabase. Нужны права DELETE для черновиков.');
+      // Не удаляем файл из Storage: опубликованная версия может ссылаться на тот же путь.
+      await images(); await load(); note('Фотография удалена из черновика.');
+    } catch (err) { report(err, 'удаление фотографии'); button.disabled = false }
+  };
+  $('files').onchange = async e => { if (!current) return; try { for (const f of e.target.files) { if (!['image/png', 'image/jpeg', 'image/webp'].includes(f.type) || f.size > 10 * 1024 * 1024) throw Error('Допустимы JPG, PNG, WebP до 10 МБ'); const ext = f.type === 'image/png' ? 'png' : f.type === 'image/webp' ? 'webp' : 'jpg'; const path = `partner/${user.id}/${current.id}/${crypto.randomUUID()}.${ext}`; const { error: up } = await db.storage.from('house-images').upload(path, f, { contentType: f.type }); if (up) fail(up); const { error: ins } = await db.from('hub_partner_submission_images').insert({ submission_id: current.id, storage_path: path, kind: $('kind').value }); if (ins) fail(ins) } await images(); note('Файлы загружены.') } catch (err) { report(err, "операция кабинета") } finally { e.target.value = '' } };
+  $('submitProject').onclick = async () => { if (!current) return; try { const { error } = await db.rpc('hub_partner_submit', { p_id: current.id }); if (error) fail(error); $('editor').classList.add('hidden'); note('Проект отправлен на модерацию.'); await load() } catch (e) { report(e, "операция кабинета") } }; db.auth.onAuthStateChange(() => { }); refresh().catch(e => { report(e, "проверка сессии"); if (!user) view("auth") });
+})();
+</script>
+ </body>
+</html>
