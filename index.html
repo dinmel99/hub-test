@@ -2434,9 +2434,42 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  function flush(){if(visible){let seconds=Math.floor((Date.now()-started)/1000);if(seconds>=3 && seconds<7200)track('section_active_time',{section:active,seconds});}started=Date.now()}
  function section(name){if(!sections.has(name)||name===active)return;flush();active=name;track('section_opened',{section:name})}
  if(CONFIG.posthogKey){
-   const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/posthog-js@1/dist/posthog.min.js';s.async=true;
-   s.onload=()=>{if(!window.posthog)return;posthog.init(CONFIG.posthogKey,{api_host:CONFIG.posthogHost,autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true,person_profiles:'never',persistence:'memory',sanitize_properties:(p)=>{delete p.$current_url;delete p.$pathname;delete p.$referrer;delete p.$referring_domain;return p}});track('hub_opened',{app:'hub-test'});track('section_opened',{section:active});};
-   document.head.appendChild(s);
+   // Official PostHog browser snippet: load the EU-hosted SDK rather than a nonexistent jsDelivr build.
+   // Keep automatic capture and replay disabled until the privacy review is complete.
+   (function(d,ph){
+     if(ph.__SV)return;
+     window.posthog=ph;ph._i=[];
+     ph.init=function(key,options,instance){
+       function queue(target,method){const parts=method.split('.');if(parts.length===2){target=target[parts[0]];method=parts[1];}target[method]=function(){target.push([method].concat(Array.prototype.slice.call(arguments,0)));};}
+       const script=d.createElement('script');script.type='text/javascript';script.async=true;script.crossOrigin='anonymous';
+       script.src='https://eu-assets.i.posthog.com/static/array.js';
+       script.onerror=()=>console.warn('HUB analytics: PostHog SDK could not be loaded');
+       d.head.appendChild(script);
+       let target=ph;
+       if(instance!==undefined){target=ph[instance]=[];}else{instance='posthog';}
+       target.people=target.people||[];
+       target.toString=function(short){return instance+(short?' (stub)':' (stub)');};
+       target.people.toString=function(){return target.toString(true)+'.people (stub)';};
+       const methods='capture identify alias people.set people.set_once set_config reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags get_distinct_id get_property get_session_id get_session_replay_url opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug'.split(' ');
+       methods.forEach(method=>queue(target,method));
+       ph._i.push([key,options,instance]);
+     };
+     ph.__SV=1;
+   })(document,window.posthog||[]);
+   window.posthog.init(CONFIG.posthogKey,{
+     api_host:CONFIG.posthogHost,
+     autocapture:false,capture_pageview:false,capture_pageleave:false,
+     disable_session_recording:true,person_profiles:'never',persistence:'memory',
+     loaded:function(ph){
+       ph.capture('hub_opened',{app:'hub-test'});
+       ph.capture('section_opened',{section:active});
+     },
+     sanitize_properties:function(properties){
+       delete properties.$current_url;delete properties.$pathname;
+       delete properties.$referrer;delete properties.$referring_domain;
+       return properties;
+     }
+   });
  }
  if(CONFIG.clarityId){
    // IMPORTANT: Clarity can collect behavioral/session information. Enable only after privacy review.
