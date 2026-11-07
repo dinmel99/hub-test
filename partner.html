@@ -226,6 +226,18 @@ main {
 .project-filters button.active{background:#017ab3;color:white;border-color:#017ab3}
 .project-filters button:focus-visible{outline:3px solid #ff8001;outline-offset:2px}
 .project-meta{margin-top:5px;font-size:12px}
+.profile-card{display:grid;grid-template-columns:60px 1fr;gap:16px;align-items:center}
+.profile-icon{width:60px;height:60px;border-radius:15px;background:#eef5fa;color:#017ab3;display:grid;place-items:center;font-size:29px}
+.profile-card h2{margin:0 0 5px}.profile-card p{margin:3px 0}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tabs button{background:#eef1f5;color:#1c2734}.tabs button.active{background:#017ab3;color:white}
+.profile-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.profile-field{background:#f7f9fb;border:1px solid #e6ebf0;padding:14px;border-radius:10px;overflow-wrap:anywhere}.profile-field small{display:block;color:#667789;margin-bottom:5px}
+#notice[data-state="error"]{background:#fff0eb;border:1px solid #f6d6c6}
+#notice[data-state="info"]{background:#fff1e6}
+#notice[data-state="ok"]{background:#e9f7ee}
+#notice{white-space:normal}
+.tech-details{margin:12px 0 4px;border:1px solid #e1e6ed;border-radius:10px;background:white;padding:12px}.tech-details summary{cursor:pointer;font-size:13px;font-weight:600}.tech-details pre{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:#455465}
+@media(max-width:600px){.profile-fields{grid-template-columns:1fr}}
+
 </style>
  </head>
  <body>
@@ -250,6 +262,7 @@ main {
     <span aria-live="polite" id="connectionStatus">
     </span>
    </div>
+   <details id="techDetails" class="tech-details hidden"><summary>Технические подробности для поддержки</summary><pre id="techLog"></pre><button type="button" class="secondary" id="copyTech">Скопировать диагностику</button></details>
    <section class="card hidden" id="auth">
     <h1>
      Кабинет партнёра
@@ -323,6 +336,10 @@ main {
     </form>
    </section>
    <section class="hidden" id="dashboard">
+    <div class="card profile-card" id="profileHeader"><div class="profile-icon" aria-hidden="true">⌂</div><div><h2 id="profileCompany">Компания партнёра</h2><p id="profilePerson" class="muted">Загружаем профиль…</p><p id="profileAccess" class="muted"></p></div></div>
+    <nav class="tabs" aria-label="Разделы кабинета"><button id="tabProjects" type="button" class="active">Проекты компании</button><button id="tabProfile" type="button">Личный кабинет</button></nav>
+    <section id="profilePanel" class="card hidden"><h2>Личный кабинет партнёра</h2><p class="muted">Данные учётной записи и компании. Изменение реквизитов и управление сотрудниками добавим отдельно.</p><div class="profile-fields" id="profileFields"></div></section>
+    <section id="projectsPanel">
     <div class="row">
      <h1>
       Проекты компании
@@ -459,34 +476,72 @@ main {
       </p>
      </div>
     </section>
+    </section>
    </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
   </script>
   <script>
 (() => {  
-'use strict'; if (!window.supabase?.createClient) { document.getElementById('notice').textContent = 'Не загрузилась библиотека Supabase. Проверьте доступность cdn.jsdelivr.net, блокировщики и сеть.'; document.getElementById('auth').classList.remove('hidden'); document.getElementById('checkConnection').disabled = true; return; } const db = window.supabase.createClient('https://vnkxhmvjsgaogxwpwgla.supabase.co', 'sb_publishable_pHSDyJPe_fR83Jk6_c82JQ_J2o-rhhZ'); const $ = id => document.getElementById(id); const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); let user = null, member = null, items = [], team = [], current = null, mode = 'login'; const note = (s, bad = false) => { $('notice').textContent = s; $('notice').dataset.state = bad ? 'error' : 'info' };
-  const networkError = e => { const message = String(e?.message || e || ''); return /failed to fetch|networkerror|load failed|fetch failed|network request failed/i.test(message) };
-  function report(e, context = 'запрос') { if (networkError(e)) { note('Не удалось связаться с Supabase (' + context + '). Это сетевая ошибка, а не подтверждение неверного пароля. Нажмите «Проверить соединение»; если запрос блокируется, проверьте расширения браузера, VPN, DNS и вкладку Network в инструментах разработчика.', true) } else note(e?.message || String(e), true); }
+'use strict'; if (!window.supabase?.createClient) { document.getElementById('notice').textContent = 'Не удалось загрузить компонент подключения. Для стабильной работы ED e M HUB рекомендуем включить VPN и обновить страницу. Если VPN уже включён, проверьте интернет-соединение.'; document.getElementById('auth').classList.remove('hidden'); document.getElementById('checkConnection').disabled = true; return; } const db = window.supabase.createClient('https://vnkxhmvjsgaogxwpwgla.supabase.co', 'sb_publishable_pHSDyJPe_fR83Jk6_c82JQ_J2o-rhhZ'); const $ = id => document.getElementById(id); const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); let user = null, member = null, items = [], team = [], current = null, mode = 'login'; const note = (s, bad = false) => { $('notice').textContent = s; $('notice').dataset.state = bad ? 'error' : 'info' };
+  const errorHistory = [];
+  const networkError = e => /failed to fetch|networkerror|load failed|fetch failed|network request failed|ERR_HTTP2|ERR_NETWORK_CHANGED|timeout/i.test(String(e?.message || e || ''));
+  function report(e, context = 'запрос') {
+    const raw = String(e?.message || e || 'Неизвестная ошибка');
+    const isNet = networkError(e);
+    const code = e?.code || e?.status || e?.statusCode || 'нет';
+    const entry = `[${new Date().toLocaleString('ru-RU')}] ${context}\nТип: ${isNet ? 'сетевая' : 'ошибка сервера/операции'}\nКод: ${code}\nСообщение: ${raw}`;
+    errorHistory.push(entry); if(errorHistory.length>12) errorHistory.shift();
+    $('techLog').textContent = errorHistory.join('\n\n— — —\n\n');
+    $('techDetails').classList.remove('hidden');
+    note(isNet ? 'Не удалось подключиться к серверу. Для стабильной работы ED e M HUB рекомендуем включить VPN и повторить попытку. Если VPN уже включён, проверьте интернет-соединение. Введённые данные формы не удалены.' : `Не удалось выполнить действие «${context}». Подробности доступны в разделе диагностики.`, true);
+    console.warn('[HUB] '+context, e);
+  }
+  $('copyTech').onclick = async () => { try { await navigator.clipboard.writeText($('techLog').textContent); $('copyTech').textContent='Скопировано'; } catch { $('copyTech').textContent='Выделите текст выше и скопируйте'; } };
   async function checkConnection() {
     const el = $('connectionStatus');
-    el.textContent = 'Проверяем подключение…';
+    $('checkConnection').disabled = true;
+    el.textContent = 'Проверяем сервер…';
     try {
-      const { data, error } = await db.auth.getSession();
-      if (error) fail(error);
-      if (data.session) {
-        const { error: pingError } = await db.from('hub_partner_members').select('user_id').limit(1);
+      // getSession only reads local storage; it is NOT a network connectivity check.
+      const {data: sessionData, error: sessionError} = await db.auth.getSession();
+      if (sessionError) fail(sessionError);
+      const {data: authData, error: authError} = await db.auth.getUser();
+      if (authError) fail(authError);
+      if (sessionData.session && authData.user) {
+        const {error: pingError} = await db.from('hub_partner_members').select('user_id').eq('user_id',authData.user.id).limit(1);
         if (pingError) fail(pingError);
-        el.textContent = 'Соединение работает. Авторизация активна.';
-      } else {
-        el.textContent = 'Нет активной сессии. Подключение к серверу проверится при входе.';
-      }
-    } catch (e) { el.textContent = 'Ошибка подключения: ' + (e?.message || e); report(e, 'проверка соединения') }
+        el.textContent = 'Сервер доступен. Авторизация активна.';
+        if ($('notice').dataset.state === 'error') note('Соединение восстановлено. Можно продолжить работу.');
+      } else el.textContent = 'Сервер доступен. Для продолжения войдите в аккаунт.';
+    } catch(e) { el.textContent = 'Подключение не подтверждено.'; report(e,'проверка соединения'); }
+    finally { $('checkConnection').disabled = false; }
   }
   $('checkConnection').onclick = checkConnection;
   const view = id => ['auth', 'request', 'dashboard'].forEach(x => $(x).classList.toggle('hidden', x !== id)); function fail(e) { throw Error(e?.message || String(e)) }
-  async function refresh() { const { data: { user: u } } = await db.auth.getUser(); user = u; $('logout').classList.toggle('hidden', !u); if (!u) { view('auth'); note('Войдите или зарегистрируйтесь. После регистрации подтвердите email.'); return } const { data: m, error: me } = await db.from('hub_partner_members').select('*').eq('user_id', u.id).maybeSingle(); if (me) fail(me); member = m; if (m?.status === 'active') { view('dashboard'); note('Партнёрский доступ активен. Проекты публикуются только после проверки администратором.'); await loadTeam(); await load(); return } const { data: r, error: re } = await db.from('hub_partner_requests').select('*').eq('user_id', u.id).maybeSingle(); if (re) fail(re); if (r) { view('request'); $('requestForm').classList.add('hidden'); note(r.status === 'pending' ? 'Заявка отправлена. Ожидайте решения администратора.' : r.status === 'rejected' ? 'Заявка отклонена. Свяжитесь с администратором.' : 'Заявка одобрена. Обновите страницу.'); return } view('request'); $('requestForm').classList.remove('hidden'); note('Заполните заявку на доступ к кабинету.'); }
-  function setMode(m) { mode = m; $('registerFields').classList.toggle('hidden', m !== 'register'); $('authSubmit').textContent = m === 'register' ? 'Зарегистрироваться' : 'Войти'; $('modeLogin').className = m === 'login' ? '' : 'secondary'; $('modeRegister').className = m === 'register' ? '' : 'secondary' } $('modeLogin').onclick = () => setMode('login'); $('modeRegister').onclick = () => setMode('register'); $('logout').onclick = async () => { await db.auth.signOut(); await refresh() }; $('authForm').onsubmit = async e => { e.preventDefault(); try { let email = $('email').value.trim(), password = $('password').value; if (mode === 'register') { if (!$('company').value.trim() || !$('contact').value.trim() || !$('phone').value.trim()) throw Error('Заполните данные компании'); const { error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } }); if (error) fail(error); view('auth'); note('Регистрация отправлена! Проверьте электронную почту и подтвердите адрес по ссылке. Затем войдите и подайте заявку.'); setMode('login') } else { const { error } = await db.auth.signInWithPassword({ email, password }); if (error) fail(error); await refresh() } } catch (e) { report(e, "операция кабинета") } };
+  let partnerRequest = null;
+  const roles = {employee:'Сотрудник',admin:'Администратор',owner:'Владелец',manager:'Менеджер'};
+  function showTab(tab) {
+    const profile = tab === 'profile';
+    $('profilePanel').classList.toggle('hidden', !profile);
+    $('projectsPanel').classList.toggle('hidden', profile);
+    $('tabProfile').classList.toggle('active', profile);
+    $('tabProjects').classList.toggle('active', !profile);
+  }
+  $('tabProjects').onclick = () => showTab('projects');
+  $('tabProfile').onclick = () => showTab('profile');
+  function renderProfile() {
+    const name = partnerRequest?.contact_name?.trim() || team.find(x=>x.user_id===user?.id)?.display_name || 'Имя не указано';
+    const company = partnerRequest?.company_name?.trim() || 'Название компании не указано';
+    const role = roles[member?.role] || member?.role || 'Сотрудник';
+    $('profileCompany').textContent = company;
+    $('profilePerson').textContent = `${name} · ${role}`;
+    $('profileAccess').textContent = member?.status==='active' ? '● Партнёрский доступ активен' : 'Доступ ожидает подтверждения';
+    const fields = [['Контактное лицо',name],['Компания',company],['Email',user?.email || '—'],['Роль',role],['Статус',member?.status==='active'?'Активен':member?.status || '—'],['Проектов компании',String(items.length)]];
+    $('profileFields').innerHTML = fields.map(([label,value])=>`<div class="profile-field"><small>${esc(label)}</small><strong>${esc(value)}</strong></div>`).join('');
+  }
+  async function refresh() { const { data: { user: u } } = await db.auth.getUser(); user = u; $('logout').classList.toggle('hidden', !u); if (!u) { view('auth'); note('Войдите или зарегистрируйтесь. После регистрации подтвердите email.'); return } const { data: m, error: me } = await db.from('hub_partner_members').select('*').eq('user_id', u.id).maybeSingle(); if (me) fail(me); member = m; if (m?.status === 'active') { view('dashboard'); showTab('projects'); const {data: ownRequest, error: ownRequestError} = await db.from('hub_partner_requests').select('company_name,contact_name').eq('user_id',u.id).order('created_at',{ascending:false}).limit(1); partnerRequest = ownRequestError ? null : ownRequest?.[0] || null; if(ownRequestError) console.warn('Не удалось загрузить данные профиля:',ownRequestError.message); renderProfile(); note('Партнёрский доступ активен. Проекты публикуются только после проверки администратором.'); await loadTeam(); await load(); return } const { data: r, error: re } = await db.from('hub_partner_requests').select('*').eq('user_id', u.id).maybeSingle(); if (re) fail(re); if (r) { view('request'); $('requestForm').classList.add('hidden'); note(r.status === 'pending' ? 'Заявка отправлена. Ожидайте решения администратора.' : r.status === 'rejected' ? 'Заявка отклонена. Свяжитесь с администратором.' : 'Заявка одобрена. Обновите страницу.'); return } view('request'); $('requestForm').classList.remove('hidden'); note('Заполните заявку на доступ к кабинету.'); }
+  function setMode(m) { mode = m; $('registerFields').classList.toggle('hidden', m !== 'register'); $('authSubmit').textContent = m === 'register' ? 'Зарегистрироваться' : 'Войти'; $('modeLogin').className = m === 'login' ? '' : 'secondary'; $('modeRegister').className = m === 'register' ? '' : 'secondary' } $('modeLogin').onclick = () => setMode('login'); $('modeRegister').onclick = () => setMode('register'); $('logout').onclick = async () => { await db.auth.signOut(); await refresh() }; $('authForm').onsubmit = async e => { e.preventDefault(); if($('authSubmit').disabled) return; $('authSubmit').disabled=true; try { let email = $('email').value.trim(), password = $('password').value; if (mode === 'register') { if (!$('company').value.trim() || !$('contact').value.trim() || !$('phone').value.trim()) throw Error('Заполните данные компании'); const { error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } }); if (error) fail(error); view('auth'); note('Регистрация отправлена! Проверьте электронную почту и подтвердите адрес по ссылке. Затем войдите и подайте заявку.'); setMode('login') } else { const { error } = await db.auth.signInWithPassword({ email, password }); if (error) fail(error); await refresh() } } catch (e) { report(e, "вход или регистрация") } finally { $('authSubmit').disabled=false; } };
   $('requestForm').onsubmit = async e => { e.preventDefault(); try { const f = new FormData(e.target); const { error } = await db.from('hub_partner_requests').insert({ user_id: user.id, company_name: f.get('company_name'), contact_name: f.get('contact_name'), phone: f.get('phone') }); if (error) fail(error); await refresh() } catch (e) { report(e, "операция кабинета") } };
   async function loadTeam() {
     // Only names belonging to the current partner company are returned by the RPC.
@@ -497,6 +552,7 @@ main {
       return;
     }
     team = data || [];
+    if (member?.status === 'active') renderProfile();
   }
 
   function who(id) {
@@ -514,6 +570,7 @@ main {
     const { data, error } = await db.from('hub_partner_submissions').select('*').order('created_at', { ascending: false });
     if (error) fail(error);
     items = data || [];
+    if (member?.status === 'active') renderProfile();
     const ids = items.map(x => x.id);
     let covers = new Map();
     if (ids.length) {
