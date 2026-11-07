@@ -461,7 +461,22 @@ main {
   async function refresh() { const { data: { user: u } } = await db.auth.getUser(); user = u; $('logout').classList.toggle('hidden', !u); if (!u) { view('auth'); note('Войдите или зарегистрируйтесь. После регистрации подтвердите email.'); return } const { data: m, error: me } = await db.from('hub_partner_members').select('*').eq('user_id', u.id).maybeSingle(); if (me) fail(me); member = m; if (m?.status === 'active') { view('dashboard'); note('Партнёрский доступ активен. Проекты публикуются только после проверки администратором.'); await loadTeam(); await load(); return } const { data: r, error: re } = await db.from('hub_partner_requests').select('*').eq('user_id', u.id).maybeSingle(); if (re) fail(re); if (r) { view('request'); $('requestForm').classList.add('hidden'); note(r.status === 'pending' ? 'Заявка отправлена. Ожидайте решения администратора.' : r.status === 'rejected' ? 'Заявка отклонена. Свяжитесь с администратором.' : 'Заявка одобрена. Обновите страницу.'); return } view('request'); $('requestForm').classList.remove('hidden'); note('Заполните заявку на доступ к кабинету.'); }
   function setMode(m) { mode = m; $('registerFields').classList.toggle('hidden', m !== 'register'); $('authSubmit').textContent = m === 'register' ? 'Зарегистрироваться' : 'Войти'; $('modeLogin').className = m === 'login' ? '' : 'secondary'; $('modeRegister').className = m === 'register' ? '' : 'secondary' } $('modeLogin').onclick = () => setMode('login'); $('modeRegister').onclick = () => setMode('register'); $('logout').onclick = async () => { await db.auth.signOut(); await refresh() }; $('authForm').onsubmit = async e => { e.preventDefault(); try { let email = $('email').value.trim(), password = $('password').value; if (mode === 'register') { if (!$('company').value.trim() || !$('contact').value.trim() || !$('phone').value.trim()) throw Error('Заполните данные компании'); const { error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } }); if (error) fail(error); view('auth'); note('Регистрация отправлена! Проверьте электронную почту и подтвердите адрес по ссылке. Затем войдите и подайте заявку.'); setMode('login') } else { const { error } = await db.auth.signInWithPassword({ email, password }); if (error) fail(error); await refresh() } } catch (e) { report(e, "операция кабинета") } };
   $('requestForm').onsubmit = async e => { e.preventDefault(); try { const f = new FormData(e.target); const { error } = await db.from('hub_partner_requests').insert({ user_id: user.id, company_name: f.get('company_name'), contact_name: f.get('contact_name'), phone: f.get('phone') }); if (error) fail(error); await refresh() } catch (e) { report(e, "операция кабинета") } };
-  async function loadTeam() { const { data, error } = await db.from('hub_partner_members').select('user_id,role').eq('contractor_id', member.contractor_id).eq('status', 'active'); if (error) fail(error); team = data || [] } const who = id => { if (!id) return '—'; const m = team.find(x => x.user_id === id); return (m?.role === 'company_admin' ? 'Администратор' : 'Сотрудник') + ' · ' + String(id).slice(0, 8) };
+  async function loadTeam() {
+    // Only names belonging to the current partner company are returned by the RPC.
+    const { data, error } = await db.rpc('hub_partner_team_names');
+    if (error) {
+      console.warn('Имена сотрудников пока недоступны:', error.message);
+      team = [];
+      return;
+    }
+    team = data || [];
+  }
+
+  function who(id) {
+    if (!id) return '—';
+    const person = team.find(x => x.user_id === id);
+    return person?.display_name?.trim() || 'Имя не указано';
+  }
   async function load() {
     const { data, error } = await db.from('hub_partner_submissions').select('*').order('created_at', { ascending: false });
     if (error) fail(error);
