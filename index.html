@@ -11,7 +11,7 @@
     const u = new URL(window.location.href);
     let changed = false;
     for (const name of Array.from(u.searchParams.keys())) {
-      if (/^(email|password|passwd|pwd|pass|token|access_token|refresh_token)$/i.test(name)) {
+      if (/^(email|password|password_confirm|passwd|pwd|pass|token|access_token|refresh_token)$/i.test(name)) {
         u.searchParams.delete(name);
         changed = true;
       }
@@ -19,6 +19,16 @@
     if (changed) window.history.replaceState(window.history.state, '', u.pathname + u.search + u.hash);
   } catch (err) { console.warn('URL cleanup failed', err); }
 })();
+</script>
+<script id="hub-auth-form-safety">
+/* Defense in depth: auth forms must never submit credentials as URL query parameters. */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('form').forEach(function (form) {
+    if (!form.querySelector('input[type="password"]')) return;
+    form.setAttribute('method', 'post');
+    form.setAttribute('action', 'javascript:void(0)');
+  });
+});
 </script>
 <title>ED e M HUB · TEST 5.13 · Ипотека</title>
 <link rel="icon" type="image/svg+xml" href="edem-icon.svg">
@@ -2369,7 +2379,7 @@ window.addEventListener('focus',()=>{if(!panel.classList.contains('hidden')&&rea
 })();
 </script>
 
-<dialog id="hub510RegisterDialog"><div class="h510-body"><div class="h510-head"><h2>Регистрация агента</h2><button class="h510-close" id="hub510RegisterClose" type="button">Закрыть</button></div><p class="h510-note">После регистрации заявка поступит администратору. Внутренние инструменты станут доступны только после одобрения.</p><form id="hub510RegisterForm"><label class="h510-field">Фамилия, имя, отчество<input name="full_name" required minlength="5" maxlength="140" autocomplete="name" placeholder="Иванов Иван Иванович"></label><label class="h510-field">Номер телефона<input name="phone" type="tel" required maxlength="30" autocomplete="tel" placeholder="+7 999 123-45-67"></label><label class="h510-field">Email<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="agent@example.com"></label><label class="h510-field">Пароль (от 8 символов)<input name="password" type="password" required minlength="8" autocomplete="new-password"></label><label class="h510-field">Повтор пароля<input name="password_confirm" type="password" required minlength="8" autocomplete="new-password"></label><div class="h510-actions"><button class="h510-primary" id="hub510RegisterSubmit" type="submit">Отправить заявку</button></div><p class="h510-message" id="hub510RegisterMessage" role="status"></p></form></div></dialog>
+<dialog id="hub510RegisterDialog"><div class="h510-body"><div class="h510-head"><h2>Регистрация агента</h2><button class="h510-close" id="hub510RegisterClose" type="button">Закрыть</button></div><p class="h510-note">После регистрации заявка поступит администратору. Внутренние инструменты станут доступны только после одобрения.</p><form id="hub510RegisterForm" method="post" action="javascript:void(0)"><label class="h510-field">Фамилия, имя, отчество<input name="full_name" required minlength="5" maxlength="140" autocomplete="name" placeholder="Иванов Иван Иванович"></label><label class="h510-field">Номер телефона<input name="phone" type="tel" required maxlength="30" autocomplete="tel" placeholder="+7 999 123-45-67"></label><label class="h510-field">Email<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="agent@example.com"></label><label class="h510-field">Пароль (от 8 символов)<input name="password" type="password" required minlength="8" autocomplete="new-password"></label><label class="h510-field">Повтор пароля<input name="password_confirm" type="password" required minlength="8" autocomplete="new-password"></label><div class="h510-actions"><button class="h510-primary" id="hub510RegisterSubmit" type="submit">Отправить заявку</button></div><p class="h510-message" id="hub510RegisterMessage" role="status"></p></form></div></dialog>
 <dialog id="hub510AdminDialog"><div class="h510-body"><div class="h510-head"><h2>Реестр агентов</h2><button class="h510-close" id="hub510AdminClose" type="button">Закрыть</button></div><p class="h510-note">ФИО, телефон, email, дата регистрации и статус доступа. Только для администраторов HUB.</p><div class="h510-actions"><button type="button" class="h510-secondary" id="hub510AdminRefresh">Обновить список</button></div><p class="h510-message" id="hub510AdminMessage" role="status"></p><div class="h510-table-wrap"><table class="h510-table"><thead><tr><th>ФИО</th><th>Телефон</th><th>Email</th><th>Регистрация</th><th>Статус</th><th>Действия</th></tr></thead><tbody id="hub510AgentRows"></tbody></table></div></div></dialog>
 <style id="hub5105-badge-css">
 .hub-profile-icon{position:relative;overflow:visible!important}
@@ -2424,6 +2434,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script>
 (function(){
  'use strict';
+ // Analytics paused: do not load PostHog or Clarity and do not send events.
+ return;
  const CONFIG={posthogKey:'phc_BxanaoTuKfRiQnvRZrXNoBXZbMcER72A7Pj3zoj6duMw',posthogHost:'https://eu.i.posthog.com',clarityId:''};
  // Analytics deliberately disabled until configured and staff notice/consent is handled.
  if(!CONFIG.posthogKey && !CONFIG.clarityId)return;
