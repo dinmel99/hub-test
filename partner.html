@@ -102,10 +102,25 @@ button.secondary {
   border-radius:12px;
   margin:10px 0}
 .pill {
+  display:inline-flex;
+  align-items:center;
   font-size:12px;
-  background:#eef1f5;
+  font-weight:600;
+  line-height:1.4;
   border-radius:20px;
-  padding:5px 9px}
+  padding:5px 10px;
+  background:#eef1f5;
+  color:#566273;
+}
+.pill--published { background:#e5f5e9; color:#176b36; }
+.pill--review { background:#fff3cd; color:#815b00; }
+.pill--draft { background:#eef1f5; color:#566273; }
+.pill--revision { background:#e7f2fb; color:#086b9e; }
+.pill--rejected { background:#fde8e8; color:#a32929; }
+.pill--update { background:#fff3cd; color:#815b00; margin-left:6px; }
+@media (prefers-contrast: more) {
+  .pill { outline:1px solid currentColor; }
+}
 #notice {
   white-space:pre-wrap}
 a {
@@ -202,6 +217,15 @@ main {
 .partner-brand-divider{width:1px;height:28px;background:#ccd5df}
 .partner-brand-caption{font-size:14px;font-weight:650;letter-spacing:.035em;white-space:nowrap}
 @media(max-width:480px){.partner-logo{height:34px;max-width:130px}.partner-brand{gap:9px}.partner-brand-caption{font-size:11px}header{gap:8px}}
+
+.project-summary{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 12px}
+.summary-chip{background:#f6f8fb;border:1px solid #e1e6ed;border-radius:10px;padding:10px 13px;font-size:13px;color:#4c5969}
+.summary-chip strong{font-size:19px;color:#172a3c;display:block;margin-bottom:2px}
+.project-filters{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.project-filters button{border:1px solid #dce3eb;background:white;color:#314255;border-radius:999px;padding:8px 13px;font-size:13px;cursor:pointer}
+.project-filters button.active{background:#017ab3;color:white;border-color:#017ab3}
+.project-filters button:focus-visible{outline:3px solid #ff8001;outline-offset:2px}
+.project-meta{margin-top:5px;font-size:12px}
 </style>
  </head>
  <body>
@@ -310,12 +334,15 @@ main {
     <p class="muted">
      Изменения опубликованного дома проходят повторную модерацию. До одобрения каталог остаётся без изменений.
     </p>
-    <div id="list">
+    <div class="project-summary" id="projectSummary" aria-live="polite"></div>
+   <div class="project-filters" id="projectFilters" role="group" aria-label="Фильтр проектов по статусу"></div>
+   <div id="list">
     </div>
     <section class="card hidden" id="editor">
-     <h2 id="editorTitle">
-      Новый проект
-     </h2>
+     <div class="row" style="align-items:center;justify-content:space-between;gap:12px">
+      <h2 id="editorTitle" style="margin:0">Новый проект</h2>
+      <button type="button" id="closeEditor" class="secondary" aria-label="Закрыть форму проекта" title="Закрыть форму">✕ Закрыть</button>
+     </div>
      <form id="projectForm">
       <div class="row">
        <div>
@@ -477,6 +504,12 @@ main {
     const person = team.find(x => x.user_id === id);
     return person?.display_name?.trim() || 'Имя не указано';
   }
+  let projectStatusFilter = 'all';
+  function formatProjectDate(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }).format(d);
+  }
   async function load() {
     const { data, error } = await db.from('hub_partner_submissions').select('*').order('created_at', { ascending: false });
     if (error) fail(error);
@@ -499,8 +532,24 @@ main {
         }
       }
     }
-    const labels = { draft: 'Черновик', review: 'На проверке', revision: 'На доработке', published: 'Опубликован', rejected: 'Отклонён' };
-    $('list').innerHTML = items.length ? items.map(x => {
+    const labels = { draft: 'Черновик', review: 'На модерации', revision: 'На доработке', published: 'Опубликован', rejected: 'Отклонён' };
+    const filterGroups = [
+      ['all', 'Все', items.length],
+      ['published', 'Опубликованы', items.filter(x => x.status === 'published').length],
+      ['review', 'На модерации', items.filter(x => x.status === 'review').length],
+      ['draft', 'Черновики', items.filter(x => x.status === 'draft').length],
+      ['revision', 'На доработке', items.filter(x => x.status === 'revision').length],
+      ['rejected', 'Отклонены', items.filter(x => x.status === 'rejected').length]
+    ];
+    $('projectSummary').innerHTML = [
+      ['Всего проектов', items.length],
+      ['Опубликовано', filterGroups[1][2]],
+      ['На модерации', filterGroups[2][2]],
+      ['Черновиков', filterGroups[3][2]]
+    ].map(([name,count]) => `<div class="summary-chip"><strong>${count}</strong>${name}</div>`).join('');
+    $('projectFilters').innerHTML = filterGroups.map(([key,label,count]) => `<button type="button" data-status-filter="${key}" class="${projectStatusFilter === key ? 'active' : ''}" aria-pressed="${projectStatusFilter === key}">${label} · ${count}</button>`).join('');
+    const shownItems = projectStatusFilter === 'all' ? items : items.filter(x => x.status === projectStatusFilter);
+    $('list').innerHTML = shownItems.length ? shownItems.map(x => {
       const canEdit = ['draft', 'revision'].includes(x.status);
       const published = x.status === 'published' && !!x.published_project_id;
       const pending = published && items.some(y => y.revision_of_project_id === x.published_project_id && ['draft', 'review', 'revision'].includes(y.status));
@@ -512,17 +561,48 @@ main {
           published && pending ? '<span class="muted">Обновление уже на модерации</span>' :
             '<span class="muted">Ожидает решения администратора</span>';
       return `<div class="item project-item">${coverHtml}<div class="project-content">
-     <b>${esc(x.name)}</b> <span class="pill">${esc(labels[x.status] || x.status)}</span>
+     <b>${esc(x.name)}</b> <span class="pill pill--${['draft', 'review', 'revision', 'published', 'rejected'].includes(x.status) ? x.status : 'draft'}">${esc(labels[x.status] || x.status)}</span>${pending ? ' <span class="pill pill--update">Обновление на модерации</span>' : ''}
      <p class="muted">Создал: ${esc(who(x.owner_id))} · Последнее изменение: ${esc(who(x.last_edited_by || x.owner_id))}</p>
+     <p class="muted project-meta">Обновлено: ${esc(formatProjectDate(x.updated_at || x.created_at))}</p>
      ${x.status === 'published' && !x.published_project_id ? '<p class="muted">Проект удалён из каталога · история сохранена</p>' : ''}
      ${x.moderator_note ? `<p class="muted">${esc(x.moderator_note)}</p>` : ''}
      <div class="project-actions">${action}</div>
    </div></div>`;
-    }).join('') : '<div class="card">Пока нет проектов. Нажмите «Добавить проект».</div>';
+    }).join('') : items.length ? '<div class="card">В этом статусе проектов пока нет.</div>' : '<div class="card">Пока нет проектов. Нажмите «Добавить проект».</div>';
   }
-  $('new').onclick = () => edit(null); $('list').onclick = async e => { const b = e.target.closest('[data-edit],[data-start-revision]'); if (!b) return; if (b.dataset.edit) { edit(items.find(x => x.id === b.dataset.edit)); return; } b.disabled = true; try { const source = items.find(x => x.id === b.dataset.startRevision); if (!source?.published_project_id) throw Error('У проекта нет связанной опубликованной версии. Обратитесь к администратору.'); const existing = items.find(x => x.revision_of_project_id === source?.published_project_id && ['draft', 'review', 'revision'].includes(x.status)); if (existing) { if (['draft', 'revision'].includes(existing.status)) edit(existing); else note('Изменения уже ожидают модерации.'); return; } const { data, error } = await db.rpc('hub_partner_start_revision', { p_submission_id: b.dataset.startRevision }); if (error) fail(error); await load(); const draft = items.find(x => x.id === data); if (draft) edit(draft); note('Создан черновик изменений. Опубликованный проект не изменится до одобрения.') } catch (err) { report(err, "операция кабинета") } finally { b.disabled = false } };
-  function edit(x) { current = x || null; $('editor').classList.remove('hidden'); $('editorTitle').textContent = x ? 'Редактировать: ' + x.name : 'Новый проект'; $('projectForm').reset(); if (x) for (const [k, v] of Object.entries(x)) { const el = $('projectForm').elements.namedItem(k); if (el) el.value = v ?? '' } $('photos').classList.toggle('hidden', !x); if (x) images().catch(err => report(err, 'загрузка фотографий')); else $('previews').innerHTML = ''; $('editor').scrollIntoView({ behavior: 'smooth' }) }
-  $('projectForm').onsubmit = async e => { e.preventDefault(); try { const data = Object.fromEntries(new FormData(e.target)); for (const k of ['area', 'floors', 'bedrooms', 'price_warm_min', 'price_white_min', 'price_turnkey_min']) data[k] = data[k] === '' ? null : Number(data[k]); let result; if (current) { result = await db.from('hub_partner_submissions').update(data).eq('id', current.id).select().single() } else { result = await db.from('hub_partner_submissions').insert({ ...data, owner_id: user.id, contractor_id: member.contractor_id }).select().single() } if (result.error) fail(result.error); current = result.data; note('Черновик сохранён. Добавьте фотографии и отправьте на проверку.'); $('photos').classList.remove('hidden'); await images(); await load() } catch (e) { report(e, "операция кабинета") } };
+  $('projectFilters').onclick = e => { const button = e.target.closest('[data-status-filter]'); if (!button) return; projectStatusFilter = button.dataset.statusFilter; load().catch(err => report(err, 'фильтрация проектов')); };
+  $('new').onclick = () => { if ($('editor').classList.contains('hidden')) edit(null); else closeEditor(); }; $('list').onclick = async e => { const b = e.target.closest('[data-edit],[data-start-revision]'); if (!b) return; if (b.dataset.edit) { edit(items.find(x => x.id === b.dataset.edit)); return; } b.disabled = true; try { const source = items.find(x => x.id === b.dataset.startRevision); if (!source?.published_project_id) throw Error('У проекта нет связанной опубликованной версии. Обратитесь к администратору.'); const existing = items.find(x => x.revision_of_project_id === source?.published_project_id && ['draft', 'review', 'revision'].includes(x.status)); if (existing) { if (['draft', 'revision'].includes(existing.status)) edit(existing); else note('Изменения уже ожидают модерации.'); return; } const { data, error } = await db.rpc('hub_partner_start_revision', { p_submission_id: b.dataset.startRevision }); if (error) fail(error); await load(); const draft = items.find(x => x.id === data); if (draft) edit(draft); note('Создан черновик изменений. Опубликованный проект не изменится до одобрения.') } catch (err) { report(err, "операция кабинета") } finally { b.disabled = false } };
+  let editorSnapshot = '';
+  const formSnapshot = () => JSON.stringify(Array.from(new FormData($('projectForm')).entries()));
+  function closeEditor(force = false) {
+    if ($('editor').classList.contains('hidden')) return true;
+    if (!force && formSnapshot() !== editorSnapshot && !confirm('В форме есть несохранённые изменения. Закрыть без сохранения?')) return false;
+    $('editor').classList.add('hidden');
+    $('projectForm').reset();
+    $('photos').classList.add('hidden');
+    $('previews').innerHTML = '';
+    current = null;
+    editorSnapshot = formSnapshot();
+    return true;
+  }
+  $('closeEditor').onclick = () => closeEditor();
+  function edit(x) {
+    if (!$('editor').classList.contains('hidden') && !closeEditor()) return;
+    current = x || null;
+    $('editor').classList.remove('hidden');
+    $('editorTitle').textContent = x ? 'Редактировать: ' + x.name : 'Новый проект';
+    $('projectForm').reset();
+    if (x) for (const [k, v] of Object.entries(x)) {
+      const el = $('projectForm').elements.namedItem(k);
+      if (el) el.value = v ?? '';
+    }
+    editorSnapshot = formSnapshot();
+    $('photos').classList.toggle('hidden', !x);
+    if (x) images().catch(err => report(err, 'загрузка фотографий'));
+    else $('previews').innerHTML = '';
+    $('editor').scrollIntoView({ behavior: 'smooth' });
+  }
+  $('projectForm').onsubmit = async e => { e.preventDefault(); try { const data = Object.fromEntries(new FormData(e.target)); for (const k of ['area', 'floors', 'bedrooms', 'price_warm_min', 'price_white_min', 'price_turnkey_min']) data[k] = data[k] === '' ? null : Number(data[k]); let result; if (current) { result = await db.from('hub_partner_submissions').update(data).eq('id', current.id).select().single() } else { result = await db.from('hub_partner_submissions').insert({ ...data, owner_id: user.id, contractor_id: member.contractor_id }).select().single() } if (result.error) fail(result.error); current = result.data; editorSnapshot = formSnapshot(); note('Черновик сохранён. Добавьте фотографии и отправьте на проверку.'); $('photos').classList.remove('hidden'); await images(); await load() } catch (e) { report(e, "операция кабинета") } };
   async function images() {
     if (!current) return;
     const { data, error } = await db.from('hub_partner_submission_images').select('*')
@@ -556,7 +636,7 @@ main {
     } catch (err) { report(err, 'удаление фотографии'); button.disabled = false }
   };
   $('files').onchange = async e => { if (!current) return; try { for (const f of e.target.files) { if (!['image/png', 'image/jpeg', 'image/webp'].includes(f.type) || f.size > 10 * 1024 * 1024) throw Error('Допустимы JPG, PNG, WebP до 10 МБ'); const ext = f.type === 'image/png' ? 'png' : f.type === 'image/webp' ? 'webp' : 'jpg'; const path = `partner/${user.id}/${current.id}/${crypto.randomUUID()}.${ext}`; const { error: up } = await db.storage.from('house-images').upload(path, f, { contentType: f.type }); if (up) fail(up); const { error: ins } = await db.from('hub_partner_submission_images').insert({ submission_id: current.id, storage_path: path, kind: $('kind').value }); if (ins) fail(ins) } await images(); note('Файлы загружены.') } catch (err) { report(err, "операция кабинета") } finally { e.target.value = '' } };
-  $('submitProject').onclick = async () => { if (!current) return; try { const { error } = await db.rpc('hub_partner_submit', { p_id: current.id }); if (error) fail(error); $('editor').classList.add('hidden'); note('Проект отправлен на модерацию.'); await load() } catch (e) { report(e, "операция кабинета") } }; db.auth.onAuthStateChange(() => { }); refresh().catch(e => { report(e, "проверка сессии"); if (!user) view("auth") });
+  $('submitProject').onclick = async () => { if (!current) return; try { const { error } = await db.rpc('hub_partner_submit', { p_id: current.id }); if (error) fail(error); closeEditor(true); note('Проект отправлен на модерацию.'); await load() } catch (e) { report(e, "операция кабинета") } }; db.auth.onAuthStateChange(() => { }); refresh().catch(e => { report(e, "проверка сессии"); if (!user) view("auth") });
 })();
 </script>
  </body>
