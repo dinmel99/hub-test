@@ -747,6 +747,26 @@ html.hub5102-public-kp #hub5102Gate{display:none!important}
  #catalogWorkspace .property-card .card-meta{min-height:40px;max-height:40px;line-height:20px}
 }
 </style>
+<style id="hub-contractor-tabs-v1">
+#partnerDetailOverlay .hub-partner-summary{display:flex;align-items:center;flex-wrap:wrap;gap:16px;padding:15px 0 18px;border-bottom:1px solid #e5ebf0}
+#partnerDetailOverlay .hub-partner-summary img{width:76px!important;height:76px!important;object-fit:contain;border-radius:12px}
+#partnerDetailOverlay .hub-partner-summary-title{display:flex;flex-direction:column;gap:5px;min-width:160px;flex:1}
+#partnerDetailOverlay .hub-partner-summary-title strong{font-size:23px;color:#172633}
+#partnerDetailOverlay .hub-partner-summary-title span{font-size:12px;color:#657887}
+#partnerDetailOverlay .hub-partner-quick{display:flex;flex-wrap:wrap;gap:8px;flex:2}
+#partnerDetailOverlay .hub-partner-quick>div{display:flex;flex-direction:column;gap:4px;background:#f4f7f9;border-radius:11px;padding:12px;flex:1;min-width:115px}
+#partnerDetailOverlay .hub-partner-quick small{color:#6d7d89;font-size:11px}
+#partnerDetailOverlay .hub-partner-quick strong{color:#172633;font-size:13px}
+#partnerDetailOverlay .hub-partner-tabs{display:flex;gap:7px;margin:0 0 16px;border-bottom:1px solid #e2e9ef;padding-bottom:10px}
+#partnerDetailOverlay .hub-partner-tabs button{border:0;background:#f1f5f8;color:#536b7b;border-radius:10px;padding:11px 18px;cursor:pointer;font-weight:800}
+#partnerDetailOverlay .hub-partner-tabs button.active{background:#017ab3;color:#fff}
+#partnerDetailOverlay .hub-partner-tab-panel[hidden]{display:none!important}
+#partnerDetailOverlay .partner-detail-layout{grid-template-columns:minmax(0,1.65fr) minmax(240px,1fr);align-items:start}
+#partnerDetailOverlay .partner-detail-layout[data-active-partner-tab="agent"] aside>.partner-section:not(.hub-internal-only){display:none!important}
+#partnerDetailOverlay .partner-detail-layout:not([data-active-partner-tab="agent"]) aside>.hub-internal-only{display:none!important}
+.hub-meeting-active #partnerDetailOverlay [data-partner-tab="agent"],.hub-meeting-active #partnerDetailOverlay [data-partner-panel="agent"]{display:none!important}
+@media(max-width:720px){#partnerDetailOverlay .partner-detail-layout{grid-template-columns:1fr}#partnerDetailOverlay .hub-partner-quick{flex-basis:100%}#partnerDetailOverlay .hub-partner-tabs button{flex:1;padding:10px 8px}}
+</style>
 </head>
 <body>
 <div id="hub5102Gate" role="region" aria-label="Вход в ИЖС HUB"><div class="hub5102-nav"><img class="edem-gate-logo" src="edem-hub-logo-tight.png" alt="ED e M HUB"></div><div class="hub5102-center"><section class="hub5102-card" id="hub5102AuthCard"><h1>Добро пожаловать</h1><p>Войдите или зарегистрируйтесь, чтобы получить доступ к инструментам ИЖС.</p><div class="hub5102-tabs" role="tablist"><button type="button" id="hub5102LoginTab" aria-selected="true">Вход</button><button type="button" id="hub5102RegTab" aria-selected="false">Регистрация</button></div><form id="hub5102LoginForm" method="post" action="javascript:void(0)"><label class="hub5102-field">Email<input name="email" type="email" required autocomplete="username" placeholder="agent@example.ru"></label><label class="hub5102-field">Пароль<input name="password" type="password" required autocomplete="current-password" placeholder="Введите пароль"></label><button class="hub5102-primary" type="submit">Войти в HUB</button></form><form method="post" action="javascript:void(0)" id="hub5102RegForm" class="hub5102-hide"><label class="hub5102-field">Фамилия, имя, отчество<input name="full_name" required minlength="5" maxlength="140" autocomplete="name" placeholder="Иванов Иван Иванович"></label><label class="hub5102-field">Номер телефона<input name="phone" type="tel" required autocomplete="tel" placeholder="+7 999 000-00-00"></label><label class="hub5102-field">Email<input name="email" type="email" required autocomplete="email" placeholder="agent@example.ru"></label><label class="hub5102-field">Пароль<input name="password" type="password" minlength="8" required autocomplete="new-password"></label><label class="hub5102-field">Повторите пароль<input name="password_confirm" type="password" minlength="8" required autocomplete="new-password"></label><button class="hub5102-primary" type="submit">Отправить заявку</button><p style="font-size:12px;margin-top:14px">Доступ откроется только после одобрения администратором.</p></form><div id="hub5102Message" class="hub5102-message" aria-live="polite">Проверяем авторизацию…</div></section><section class="hub5102-card hub5102-pending hub5102-hide" id="hub5106EmailCard" aria-live="polite"><div style="font-size:42px;color:#FF8001;margin-bottom:12px">✉</div><h1>Подтвердите электронную почту</h1><p>Мы отправили письмо со ссылкой для подтверждения на <strong id="hub5106EmailAddress"></strong>.</p><p>Перейдите по ссылке в письме. После подтверждения почты и одобрения администратором вы сможете войти в ИЖС HUB.</p><p style="font-size:12px;color:#637380">Не нашли письмо? Проверьте папку «Спам».</p><button type="button" class="hub5102-primary" id="hub5106BackLogin">Вернуться ко входу</button></section><section class="hub5102-card hub5102-pending hub5102-hide" id="hub5102PendingCard"><h1>Заявка на рассмотрении</h1><p id="hub5102PendingText">Администратор ещё не одобрил доступ.</p><a id="hub5102PartnerLink" class="hub5102-secondary hub5102-hide" href="partner.html" style="display:inline-block;text-decoration:none;margin:5px">Перейти в кабинет партнёра</a><button type="button" class="hub5102-secondary" id="hub5102Recheck">Проверить доступ</button><button type="button" class="hub5102-secondary" id="hub5102Logout">Выйти из аккаунта</button></section></div><div class="hub5102-note">Доступ только для сотрудников и одобренных агентов · ИЖС HUB</div></div>
@@ -2043,6 +2063,59 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function sync(){fillSelect('houseContractorSelect');fillSelect('practiceContractorSelect')}
 function render(){let q=$('partnerSearch').value.toLowerCase().trim(),tech=$('partnerTechnology').value;let a=partners.filter(p=>(!$('partnerTopOnly').checked||p.is_top)&&(!q||(p.name+' '+p.technology).toLowerCase().includes(q))&&(!tech||p.technology.toLowerCase().includes(tech.toLowerCase())));$('partnerCount').textContent='Найдено компаний: '+a.length;$('partnerGrid').innerHTML=a.map((p,i)=>'<button type="button" class="partner-card" data-partner="'+esc(p.name)+'"><span class="partner-number">ПАРТНЁР · '+String(i+1).padStart(2,'0')+'</span><h3 class="partner-name">'+esc(p.name)+'</h3><div class="partner-inline-tags">'+(p.technology||'').split(',').slice(0,3).map(x=>'<span>'+esc(x.trim())+'</span>').join('')+'</div><p class="partner-speciality">'+(p.mortgage==='✅'?'Семейная ипотека: указана в реестре':'Условия ипотеки уточняются')+'</p><div class="partner-bottom"><span class="partner-price">'+(p.budget?'от '+esc(p.budget)+' млн ₽':'Цена по запросу')+'</span><span>О компании →</span></div></button>').join('')||'<p>Подрядчики не найдены</p>'}
 function detail(p){$('partnerDetailName').textContent=p.name;const tech=(p.technology||'').split(',').map(x=>x.trim()).filter(Boolean);const generatedPitch='Для вашего запроса можно рассмотреть компанию «'+p.name+'». По нашему партнёрскому реестру она работает с технологиями: '+(tech.join(', ')||'уточняется')+'. '+(p.budget?'Ориентир бюджета начинается от '+p.budget+' млн рублей, но итоговая стоимость зависит от проекта и комплектации. ':'Стоимость рассчитывается индивидуально. ')+'Предлагаю запросить актуальное предложение и сравнить состав работ с другими подрядчиками.';const pitch=p.sales_pitch||generatedPitch;const facts=[['Технологии',p.technology||'Уточнить'],['Бюджет',p.budget?'от '+p.budget+' млн ₽':'По запросу'],['Семейная ипотека',p.mortgage==='✅'?'Указана в реестре':'Уточнить'],['Без первоначального взноса',p.zero==='✅'?'Указана возможность':p.zero==='❌'?'Не указана возможность':'Индивидуально / уточнить'],['Комбо-ипотека',p.combo==='Да'?'Указана в реестре':'Уточнить']];$('partnerDetailBody').innerHTML='<div class="partner-detail-layout"><div>'+(p.logo_url?'<img class="partner-logo" style="width:100px;height:100px" src="'+esc(p.logo_url)+'" alt="Логотип">':'')+(p.description?'<section class="partner-section"><h3>О компании</h3><p>'+esc(p.description)+'</p></section>':'')+(p.advantages?'<section class="partner-section"><h3>Преимущества компании</h3><p>'+esc(p.advantages).replace(/\n/g,'<br>')+'</p></section>':'')+'<section class="partner-section"><h3>Проекты домов</h3><div class="partner-actions"><button type="button" class="partner-action" id="partnerShowProjectsPublic">Посмотреть проекты домов</button></div></section>'+'<section class="partner-section hub-agent-guidance"><div class="houses-eyebrow">ПОЗИЦИОНИРОВАНИЕ</div><h3>Как представить компанию клиенту</h3><div class="partner-pitch">'+esc(pitch)+'</div><div class="partner-actions"><button type="button" class="partner-action secondary" id="partnerCopyPitch">Копировать презентацию</button><button type="button" class="partner-action" id="partnerShowProjects">Посмотреть проекты домов</button></div></section><section class="partner-section hub-agent-guidance"><h3>Кому предложить</h3><p>'+(p.target_clients?esc(p.target_clients):'Клиентам, которые рассматривают '+esc(tech.length?tech.join(' / ').toLowerCase():'строительство дома')+(p.budget?' и ориентируются на стартовый бюджет от '+esc(p.budget)+' млн ₽':'')+'. Уточните комплектацию, площадь, участок и требования к срокам перед рекомендацией.')+'</p></section><section class="partner-section hub-agent-guidance"><h3>Аргументы для консультации</h3><div class="partner-inline-tags">'+tech.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><p>'+(p.advantages?esc(p.advantages).replace(/\n/g,'<br>'):'Опирайтесь на указанные технологии и доступные финансовые сценарии. Не обещайте сроки, гарантии, фиксированную цену или качество без подтверждающих документов подрядчика.')+'</p></section><section class="partner-section hub-agent-guidance"><h3>Вопросы перед презентацией</h3><p>'+(p.cautions?esc(p.cautions):'Что включено в стоимость? Какая комплектация указана в расчёте? Какие работы и коммуникации оплачиваются отдельно? Каковы реальные сроки, гарантия и порядок оплаты? Какие ипотечные программы действуют на дату обращения?')+'</p></section></div><aside><section class="partner-section"><h3>Паспорт подрядчика</h3>'+facts.map(([k,v])=>'<div class="partner-fact"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('')+(cleanSite(p.site)?'<div class="partner-actions"><a class="partner-action secondary" target="_blank" rel="noopener noreferrer" href="'+esc(cleanSite(p.site))+'" style="text-decoration:none">Официальный сайт ↗</a></div>':'')+(p.escrow_registry_url&&isOfficialEscrowRegistryUrl(p.escrow_registry_url)?'<div class="partner-actions"><a class="partner-action secondary" target="_blank" rel="noopener noreferrer" href="'+esc(p.escrow_registry_url)+'" style="text-decoration:none">Проверить подрядчика на строим.дом.рф ↗</a></div>':'')+'</section><section class="partner-section hub-agent-guidance"><h3>Агенту на заметку</h3><p class="partner-caution">Карточка основана на партнёрском реестре. Подтверждённые преимущества, фотографии реализованных домов, отзывы, гарантии и контакты куратора пока не заполнены. Не используйте предположения как факты.</p></section></aside></div>'; $('partnerDetailOverlay').classList.remove('hidden');showPrivateInDetail(p);showRelatedPractice(p);$('partnerCopyPitch').onclick=()=>{navigator.clipboard?.writeText(pitch).then(()=>{ $('partnerCopyPitch').textContent='Скопировано ✓' }).catch(()=>prompt('Скопируйте текст:',pitch))};$('partnerShowProjectsPublic').onclick=()=>{ $('partnerShowProjects').click() };$('partnerShowProjects').onclick=()=>{ $('partnerDetailOverlay').classList.add('hidden');document.querySelector('#hubTopnav [data-go="projects"]')?.click();const search=$('housesSearch');if(search){search.value=p.name;search.dispatchEvent(new Event('input',{bubbles:true}))}}}
+// Contractor card tabs: preserve the original data, RLS checks and project handlers.
+const hubOriginalContractorDetail=detail;
+detail=function(p){
+  hubOriginalContractorDetail(p);
+  const root=$('partnerDetailBody');
+  const layout=root?.querySelector('.partner-detail-layout');
+  if(!layout)return;
+  const left=layout.firstElementChild, aside=layout.querySelector('aside');
+  const sections=[...left.querySelectorAll(':scope > .partner-section')];
+  const overview=document.createElement('div');overview.className='hub-partner-tab-panel';overview.dataset.partnerPanel='overview';
+  const agent=document.createElement('div');agent.className='hub-partner-tab-panel';agent.dataset.partnerPanel='agent';
+  const projects=document.createElement('div');projects.className='hub-partner-tab-panel';projects.dataset.partnerPanel='projects';
+  const summary=document.createElement('div');summary.className='hub-partner-summary';
+  const title=document.createElement('div');title.className='hub-partner-summary-title';
+  title.innerHTML='<strong>'+esc(p.name)+'</strong><span>'+esc(p.technology||'Технология уточняется')+'</span>';
+  const logo=left.querySelector(':scope > img.partner-logo');if(logo)summary.append(logo);
+  summary.append(title);
+  const quick=document.createElement('div');quick.className='hub-partner-quick';
+  const quickItems=[['Бюджет',p.budget?'от '+p.budget+' млн ₽':'По запросу'],['Технологии',p.technology||'Уточнить'],['Семейная ипотека',p.mortgage==='✅'?'Указана':'Уточнить']];
+  quick.innerHTML=quickItems.map(([k,v])=>'<div><small>'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>').join('');
+  summary.append(quick);
+  sections.forEach(section=>{
+    const heading=section.querySelector('h3')?.textContent?.trim()||'';
+    if(heading==='Проекты домов')projects.append(section);
+    else if(section.classList.contains('hub-agent-guidance'))agent.append(section);
+    else overview.append(section);
+  });
+  // A single source of truth for advantages; avoid repeating the same text in agent arguments.
+  const argumentsSection=[...agent.querySelectorAll('.partner-section')].find(x=>x.querySelector('h3')?.textContent?.trim()==='Аргументы для консультации');
+  if(argumentsSection && p.advantages)argumentsSection.remove();
+  const tabs=document.createElement('div');tabs.className='hub-partner-tabs';tabs.setAttribute('role','tablist');
+  tabs.innerHTML='<button type="button" data-partner-tab="overview" role="tab">Обзор</button><button type="button" data-partner-tab="agent" role="tab" class="hub-agent-guidance">Агенту</button><button type="button" data-partner-tab="projects" role="tab">Проекты</button>';
+  left.replaceChildren(tabs,overview,agent,projects);
+  layout.before(summary);
+  function selectTab(requested){
+    const meeting=document.body.classList.contains('hub-meeting-active');
+    const selected=meeting&&requested==='agent'?'overview':requested;
+    tabs.querySelectorAll('[data-partner-tab]').forEach(b=>{const active=b.dataset.partnerTab===selected;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
+    [overview,agent,projects].forEach(panel=>panel.hidden=panel.dataset.partnerPanel!==selected);
+    layout.dataset.activePartnerTab=selected;
+    // The private panel remains in the existing aside, but is only visible on the agent tab.
+  }
+  tabs.addEventListener('click',e=>{const b=e.target.closest('[data-partner-tab]');if(b)selectTab(b.dataset.partnerTab)});
+  selectTab('overview');
+  // Meeting mode may be toggled while the contractor modal is open.
+  const toggle=$('hubMeetingToggle');
+  if(toggle){
+    if(window.hubPartnerMeetingListener)toggle.removeEventListener('click',window.hubPartnerMeetingListener);
+    window.hubPartnerMeetingListener=()=>{if(document.body.classList.contains('hub-meeting-active')&&layout.dataset.activePartnerTab==='agent')selectTab('overview')};
+    toggle.addEventListener('click',window.hubPartnerMeetingListener);
+  }
+};
+
 // Public published materials only; never query the moderation table here.
 async function showRelatedPractice(p){
  const body=$('partnerDetailBody');const left=body?.querySelector('.partner-detail-layout > div');if(!left)return;
