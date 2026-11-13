@@ -1,0 +1,63 @@
+#hubNativeMap{width:100%;height:100%;min-height:300px;background:#e8edf0}.property-card{cursor:pointer}.property-card.is-focused{outline:2px solid #ff8001;outline-offset:-2px}.catalog-map{position:relative}.leaflet-container{font-family:Inter,Arial,sans-serif}.leaflet-popup-content{margin:12px 16px}.hub-map-popup{min-width:190px}.hub-map-popup strong{font-size:15px}.hub-map-popup p{font-size:12px;color:#64748b;margin:7px 0}.hub-map-popup button{border:0;background:#ff8001;color:#fff;padding:9px 12px;border-radius:8px;font-weight:700;cursor:pointer;width:100%}
+
+/* Map stays inside its own stacking context; the client drawer stays above it. */
+.catalog-map { isolation:isolate; z-index:0; }
+#hubNativeMap { position:relative; z-index:0; }
+.hub-drawer, .hub-drawer.open { z-index:5000 !important; }
+.hub-drawer .drawer-title { position:relative; z-index:1; }
+
+
+.hub-map-engines,#hubLeafletMap,#hubNativeMap{width:100%;height:100%;min-height:300px}
+.hub-map-engines{position:relative;isolation:isolate}
+.hub-map-engines>div[hidden]{display:none!important}
+.hub-engine-switch[hidden]{display:none!important}
+.hub-engine-switch{display:inline-flex;gap:3px;padding:3px;background:#f0f2f4;border-radius:22px;margin-left:auto}
+.hub-engine-switch button{border:0;border-radius:18px;padding:8px 13px;background:transparent;color:#52616b;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.hub-engine-switch button.active{background:#fff;color:#017ab3;box-shadow:0 1px 5px #0000001a}
+.hub-engine-switch button:disabled{opacity:.55;cursor:wait}
+.catalog-mode{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#hubLeafletMap{z-index:0}
+
+
+#catalogMap.hub-map-fullscreen{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;z-index:9000!important;border:0!important;display:block!important;background:#fff!important;flex:none!important}
+#catalogMap.hub-map-fullscreen .hub-map-engines{height:100%!important;min-height:0!important}
+#hubFullscreenBtn{position:absolute;top:12px;left:12px;right:auto;z-index:1100;display:flex;align-items:center;gap:7px;background:#fff;color:#263440;border:1px solid #dce3e8;border-radius:10px;padding:10px 13px;box-shadow:0 3px 14px #0002;font:650 13px Inter,Arial,sans-serif;cursor:pointer}
+#hubFullscreenBtn:hover{border-color:#ff8001;color:#c15f00}
+body.hub-full-map-open{overflow:hidden!important}
+@media(max-width:740px){#catalogMap.hub-map-fullscreen{height:100dvh!important;min-height:0!important;flex:none!important}}
+
+
+/* Mobile catalog: PIK-style vertical cards and mutually exclusive map/list modes. */
+.hub-mobile-view-switch{display:none}
+@media(max-width:740px){
+ #panelSettlementsList{min-height:0;overflow:hidden}
+ #panelSettlementsList .panel-topbar{flex-shrink:0}
+ #panelSettlementsList .catalog-filters{flex-shrink:0;padding:10px 12px 9px}
+ #panelSettlementsList .filter-controls{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:3px}
+ #panelSettlementsList .filter-controls::-webkit-scrollbar{display:none}
+ #panelSettlementsList .filter-controls .hub-name-search{flex:0 0 220px;min-width:220px}
+ #panelSettlementsList .filter-controls label:not(.hub-name-search){flex:0 0 155px;min-width:155px}
+ #panelSettlementsList .filter-controls #btnToggleSplit{display:none!important}
+ .hub-mobile-view-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:10px 12px;padding:4px;background:#edf1f3;border-radius:13px;flex-shrink:0}
+ .hub-mobile-view-switch button{min-height:42px;border:0;border-radius:10px;background:transparent;color:#53626d;font:700 13px Inter,Arial,sans-serif;cursor:pointer}
+ .hub-mobile-view-switch button[aria-pressed="true"]{background:#fff;color:#182d3a;box-shadow:0 1px 6px #162c3b1c}
+ #catalogWorkspace,#catalogWorkspace.map-off{display:flex!important;flex-direction:column!important;min-height:0;flex:1;overflow:hidden;padding:0 12px 12px;gap:0}
+ #catalogWorkspace>.list-scroll,#catalogWorkspace.split>.list-scroll{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;padding:4px 0 18px}
+ #catalogWorkspace #settlementsListBody,#catalogWorkspace.map-off #settlementsListBody,#catalogWorkspace.split #settlementsListBody{display:grid;grid-template-columns:minmax(0,1fr)!important;gap:16px}
+ #catalogWorkspace .property-card{width:100%;border-radius:17px}
+ #catalogWorkspace .card-visual{height:auto!important;aspect-ratio:16/9!important;min-height:0}
+ #catalogWorkspace .card-details{padding:16px}
+ #catalogWorkspace .card-details h3{font-size:19px;line-height:1.3}
+ #catalogWorkspace .card-meta{font-size:12px}
+ #catalogWorkspace .card-price{font-size:18px}
+ #catalogWorkspace .pickbtn{font-size:12px;padding:11px 12px}
+ #catalogWorkspace .catalog-map,#catalogWorkspace .catalog-map.hidden{display:none!important}
+ #catalogWorkspace.hub-mobile-map-mode>.list-scroll{display:none!important}
+ #catalogWorkspace.hub-mobile-map-mode .catalog-map,#catalogWorkspace.hub-mobile-map-mode .catalog-map.hidden{display:block!important;flex:1 1 auto;min-height:0!important;height:auto!important;border:0;border-radius:15px;overflow:hidden}
+ #catalogWorkspace.hub-mobile-map-mode .hub-map-engines{height:100%!important;min-height:0}
+ #catalogWorkspace.hub-mobile-map-mode #hubLeafletMap,#catalogWorkspace.hub-mobile-map-mode #hubNativeMap{height:100%!important;min-height:0}
+ #catalogWorkspace.hub-mobile-map-mode #hubFullscreenBtn{display:none!important}
+}
+
+
+#panelHouses{background:#f7f8fa;overflow-y:auto}.houses-header{padding:28px 32px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px}.houses-header h2,.houses-modal h2{font:800 28px Inter,Arial,sans-serif;letter-spacing:-.04em}.houses-header p{font-size:13px;color:#76838c;margin:8px 0 0}.houses-eyebrow{font-size:10px;color:#ff8001;font-weight:850;letter-spacing:.12em;margin-bottom:8px}.houses-admin-button{background:white;border:1px solid #e1e6ea;border-radius:12px;padding:12px 16px;font-weight:700}.houses-filters{display:flex;flex-wrap:wrap;gap:9px;padding:0 32px 16px}.houses-filters input,.houses-filters select,.houses-filters button{height:42px;border:1px solid #e0e5e9;background:white;border-radius:22px;padding:0 14px;color:#34434f;font:500 12px Inter,Arial,sans-serif;min-width:110px}.houses-filters #housesSearch{flex:2;min-width:250px}.houses-count{padding:0 32px 14px;color:#798791;font-size:12px}.houses-grid{padding:0 32px 32px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.house-card{background:white;border:1px solid #e8edf0;border-radius:16px;overflow:hidden}.house-card-image{aspect-ratio:1.55;position:relative;background:#edf2f4;display:grid;place-items:center;color:#87949c}.house-card-image img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;cursor:zoom-in}.house-card-images{position:absolute;bottom:10px;right:10px;background:#17212bd9;color:#fff;font-size:11px;border-radius:20px;padding:5px 10px}.house-card-body{padding:17px}.house-card-body h3{font-size:18px;font-weight:800;margin:5px 0}.house-contractor{font-size:11px;color:#75838c}.house-features{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.house-features span{font-size:11px;border-radius:7px;background:#f1f5f7;padding:5px 8px;color:#4c5a63}.house-price{font-weight:800;font-size:16px;margin:10px 0;color:#1e2931}.house-price small{font-size:10px;color:#88949d;font-weight:500}.house-pick{border:1px solid #ff8001;background:#fff7ee;color:#b85d00;padding:11px 12px;border-radius:10px;font-weight:800;width:100%}.house-pick.active{background:#1e8a54;color:white;border-color:#1e8a54}.houses-modal{position:fixed;inset:0;background:#101c27a6;z-index:12000;display:flex;justify-content:center;align-items:center;padding:20px}.houses-modal-body{width:min(940px,100%);max-height:92vh;overflow-y:auto;background:white;border-radius:18px;padding:24px}.houses-modal-head{display:flex;justify-content:space-between;align-items:start}.houses-modal-head>button{background:#f1f3f5;border:0;border-radius:10px;padding:10px 13px}.houses-admin-note{margin:14px 0;background:#fff7eb;border:1px solid #ffdfb8;border-radius:9px;padding:12px;font-size:12px;line-height:1.5}.houses-admin-actions{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.houses-admin-actions button,.houses-import,.houses-form-actions button{border:1px solid #dce3e7;border-radius:9px;padding:10px 13px;background:white;font-weight:700;font-size:12px;cursor:pointer}.houses-primary{background:#ff8001!important;border-color:#ff8001!important;color:white!important}.houses-admin-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf0f2;font-size:13px}.houses-admin-row strong{flex:1}.houses-admin-row small{color:#8b96a0}.houses-admin-row button{border:1px solid #e2e7ea;border-radius:8px;background:#fff;padding:7px 9px;font-size:11px}.houses-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.houses-form-grid label,.houses-long{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#60707b;font-weight:700}.houses-form-grid input,.houses-form-grid select,.houses-long textarea{padding:10px;border:1px solid #dfe5e9;border-radius:8px;font:500 13px Inter,Arial,sans-serif;width:100%}.houses-long{margin-top:13px}.houses-drop{margin-top:15px;padding:24px;border:2px dashed #cad5dc;border-radius:13px;text-align:center;color:#596b76;font-size:13px}.houses-drop.drag{border-color:#ff8001;background:#fff8ef}.houses-drop label{color:#017ab3;cursor:pointer;text-decoration:underline}.houses-drop small{display:block;margin-top:8px;color:#89969f}.houses-image-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.houses-preview{width:110px;position:relative;border:1px solid #e0e6e9;border-radius:9px;overflow:hidden}.houses-preview img{width:100%;height:80px;object-fit:cover}.houses-preview button{border:0;background:white;font-size:10px;padding:5px;width:100%;cursor:pointer}.houses-preview b{display:block;font-size:9px;padding:3px;color:#b65d00}.houses-form-actions{display:flex;justify-content:end;gap:10px;margin-top:16px}@media(max-width:1000px){.houses-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.houses-header,.houses-filters,.houses-count{padding-left:14px;padding-right:14px}.houses-grid{padding:0 14px 20px;grid-template-columns:1fr}.houses-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
